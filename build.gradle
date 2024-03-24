@@ -1,0 +1,208 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.2.3'
+    id 'io.spring.dependency-management' version '1.1.4'
+
+    // checkstyle
+    id 'checkstyle'
+
+    // jacoco
+    id 'jacoco'
+}
+
+tasks.named('bootJar') {
+    enabled = false
+}
+
+tasks.named('jar') {
+    enabled = true
+}
+
+ext["testcontainersVersion"] = "1.19.6"
+
+subprojects {
+    group = 'com.peoplehere'
+    version = '0.0.1-SNAPSHOT'
+    sourceCompatibility = '21'
+
+    apply plugin: 'java'
+    apply plugin: 'java-library'
+    apply plugin: 'org.springframework.boot'
+    apply plugin: 'io.spring.dependency-management'
+    apply plugin: 'checkstyle'
+    apply plugin: 'jacoco'
+
+    configurations {
+        compileOnly {
+            extendsFrom annotationProcessor
+        }
+    }
+
+    repositories {
+        mavenCentral()
+    }
+
+    //  IntelliJ 빌드용
+    tasks.register('cleanOut', Delete) {
+        delete "${projectDir}/out"
+    }
+
+    clean.finalizedBy(cleanOut)
+
+    // 모든 모듈 공통 의존성
+    dependencies {
+
+        // Lombok & Mapstruct
+        compileOnly 'org.projectlombok:lombok'
+        implementation 'org.mapstruct:mapstruct:1.5.1.Final'
+        implementation 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+        annotationProcessor "org.projectlombok:lombok-mapstruct-binding:0.2.0"
+        annotationProcessor 'org.projectlombok:lombok'
+        annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.1.Final'
+
+        // flyway
+        implementation 'org.flywaydb:flyway-core'
+
+        // https://mvnrepository.com/artifact/com.vladmihalcea/hibernate-types-60
+        implementation 'io.hypersistence:hypersistence-utils-hibernate-60:3.5.1'
+
+        // spring boot
+        implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+        implementation 'org.springframework.boot:spring-boot-starter-security'
+        implementation 'org.springframework.boot:spring-boot-starter-web'
+        implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+        // postgresql
+        runtimeOnly 'org.postgresql:postgresql'
+
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        testImplementation 'org.springframework.security:spring-security-test'
+        testImplementation platform('org.junit:junit-bom:5.9.1')
+        testImplementation "org.testcontainers:junit-jupiter:${testcontainersVersion}"
+
+        // testContainer
+        testImplementation "org.testcontainers:testcontainers"
+        testImplementation 'org.testcontainers:postgresql'
+        testImplementation 'io.rest-assured:rest-assured'
+
+    }
+
+    dependencyManagement {
+        imports {
+            mavenBom "org.testcontainers:testcontainers-bom:${testcontainersVersion}"
+        }
+    }
+
+    ext {
+        jacocoExcludePatterns = [
+                "**/*Application*",
+                "**/*Entity*",
+                "**/test/**",
+                "**/resources/**"
+        ]
+
+        QDomains = []
+        for (qPattern in '*.QA'..'*.QZ') { // qPattern = '*.QA', '*.QB', ... '*.QZ'
+            QDomains.add(qPattern + '*')
+        }
+    }
+
+    checkstyle {
+        maxWarnings = 0
+        configFile = file("${rootDir}/lint/naver-checkstyle-rules.xml")
+        configProperties = ["suppressionFile": "${rootDir}/lint/naver-checkstyle-suppressions.xml"]
+        toolVersion = "10.13.0"
+    }
+
+    compileJava.options.encoding = 'UTF-8'
+    compileTestJava.options.encoding = 'UTF-8'
+
+    tasks.named('test') {
+        useJUnitPlatform()
+        finalizedBy 'jacocoTestReport'
+    }
+
+    jacoco {
+        toolVersion = '0.8.11' // support jdk 21
+        // reportsDir = file("$buildDir/customJacocoReportDir")
+    }
+
+    jacocoTestReport {
+        reports {
+            html.required = true
+            xml.required = true
+            csv.required = false
+
+            // 리포트의 저장 경로 설정
+            // layout.buildDirectory를 직접 사용하여 보고서 목적지 지정
+            html.destination file("${layout.buildDirectory.dir('reports/jacoco').get().asFile}/index.html")
+            xml.destination file("${layout.buildDirectory.dir('reports/jacoco').get().asFile}/index.xml")
+        }
+
+        afterEvaluate {
+            classDirectories.setFrom(
+                    files(classDirectories.files.collect {
+                        fileTree(dir: it, excludes: jacocoExcludePatterns + QDomains) // Querydsl 관련 제거
+                    })
+            )
+        }
+
+        finalizedBy 'jacocoTestCoverageVerification'
+    }
+
+    jacocoTestCoverageVerification {
+        violationRules {
+
+            rule {
+                enabled = true
+//                enabled = false
+                excludes = jacocoExcludePatterns + QDomains
+
+                element = 'CLASS'
+
+                limit {
+                    counter = 'BRANCH'
+                    value = 'COVEREDRATIO'
+                    minimum = 0.80
+                }
+
+                limit {
+                    counter = 'LINE'
+                    value = 'COVEREDRATIO'
+                    minimum = 0.80
+                }
+            }
+        }
+    }
+
+
+}
+
+project(':module-api') {
+
+    bootJar { enabled = true }
+    jar { enabled = false }
+
+    dependencies {
+        implementation project(':module-webhook')
+        implementation project(':module-shared')
+    }
+}
+
+project(':module-webhook') {
+
+    bootJar { enabled = false }
+    jar { enabled = true }
+
+    dependencies {
+    }
+}
+
+project(':module-shared') {
+
+    bootJar { enabled = false }
+    jar { enabled = true }
+
+    dependencies {
+    }
+}

@@ -1,0 +1,24 @@
+spring:
+  config:
+    activate:
+      on-profile: test
+  flyway:
+    enabled: false
+    clean-disabled: false
+  datasource:
+    hikari:
+      jdbc-url:
+      username: sa
+      password:
+      #      driver-class-name: org.postgresql.Driver
+      driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+  jpa:
+    #    show-sql: true
+    properties:
+      hibernate:
+        #        show-sql: true
+        #        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    #        dialect: org.hibernate.dialect.PostgreSQL95Dialect
+    hibernate:
+      ddl-auto: create-drop

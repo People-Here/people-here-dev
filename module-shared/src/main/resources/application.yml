@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: shared
+
+  flyway:
+    locations: classpath:/db/migration # migration ???? ???? directory
+    sql-migration-suffixes: sql        # ?? ???
+    baseline-on-migrate: true          # flyway_schema_history ???? ???? ???? ??
+    baseline-version: 0                # ?? ?? ??
+    default-schema: public             # flyway ? ??? ???
+
+  jpa:
+    show-sql: false
+    hibernate:
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  datasource:
+    url: ${JDBC_URL:jdbc:postgresql://localhost:5432/postgres}
+    username: ph
+    password: ph
+    hikari:
+      maximum-pool-size: 10
+      schema: public
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+      ssl:
+        enabled: false
