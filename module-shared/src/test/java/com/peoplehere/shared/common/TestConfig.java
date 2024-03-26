@@ -12,7 +12,6 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
  */
 @TestConfiguration
 public class TestConfig {
-
 	@Bean
 	public DataSource dataSource(@Value("${spring.datasource.hikari.jdbcUrl}") String url,
 		@Value("${spring.datasource.hikari.username}") String username,
@@ -24,5 +23,4 @@ public class TestConfig {
 		dataSource.setPassword(password);
 		return dataSource;
 	}
-
 }

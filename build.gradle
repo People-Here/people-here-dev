@@ -71,6 +71,8 @@ subprojects {
         implementation 'org.springframework.boot:spring-boot-starter-security'
         implementation 'org.springframework.boot:spring-boot-starter-web'
         implementation 'org.springframework.boot:spring-boot-starter-actuator'
+        implementation 'org.springframework.boot:spring-boot-starter-validation'
+        implementation 'org.springframework.boot:spring-boot-starter-jdbc' ji
 
         // postgresql
         runtimeOnly 'org.postgresql:postgresql'
@@ -93,20 +95,6 @@ subprojects {
         }
     }
 
-    ext {
-        jacocoExcludePatterns = [
-                "**/*Application*",
-                "**/*Entity*",
-                "**/test/**",
-                "**/resources/**"
-        ]
-
-        QDomains = []
-        for (qPattern in '*.QA'..'*.QZ') { // qPattern = '*.QA', '*.QB', ... '*.QZ'
-            QDomains.add(qPattern + '*')
-        }
-    }
-
     checkstyle {
         maxWarnings = 0
         configFile = file("${rootDir}/lint/naver-checkstyle-rules.xml")
@@ -122,12 +110,18 @@ subprojects {
         finalizedBy 'jacocoTestReport'
     }
 
+    def QDomains = []
+    for (qPattern in '*.QA'..'*.QZ') { // qPattern = '*.QA', '*.QB', ... '*.QZ'
+        QDomains.add(qPattern + '*')
+    }
+
     jacoco {
         toolVersion = '0.8.11' // support jdk 21
         // reportsDir = file("$buildDir/customJacocoReportDir")
     }
 
     jacocoTestReport {
+
         reports {
             html.required = true
             xml.required = true
@@ -142,7 +136,14 @@ subprojects {
         afterEvaluate {
             classDirectories.setFrom(
                     files(classDirectories.files.collect {
-                        fileTree(dir: it, excludes: jacocoExcludePatterns + QDomains) // Querydsl 관련 제거
+                        fileTree(dir: it, excludes: [
+                                // 측정 안하고 싶은 패턴
+                                "**/*Application*",
+                                "**/entity/**",
+                                "**/enums/**",
+                                "**/resources/**",
+                                "**/test/**"
+                        ] + QDomains)
                     })
             )
         }
@@ -151,13 +152,12 @@ subprojects {
     }
 
     jacocoTestCoverageVerification {
+
         violationRules {
 
             rule {
                 enabled = true
 //                enabled = false
-                excludes = jacocoExcludePatterns + QDomains
-
                 element = 'CLASS'
 
                 limit {
@@ -171,31 +171,20 @@ subprojects {
                     value = 'COVEREDRATIO'
                     minimum = 0.80
                 }
+
+                excludes = [
+                        // 측정 안하고 싶은 패턴
+                        "**.Application.**",
+                        "**.test.**",
+                        "**.entity.**",
+                        "**.enums.**",
+                        "**.resources.**"
+                ] + QDomains
             }
         }
     }
 
 
-}
-
-project(':module-api') {
-
-    bootJar { enabled = true }
-    jar { enabled = false }
-
-    dependencies {
-        implementation project(':module-webhook')
-        implementation project(':module-shared')
-    }
-}
-
-project(':module-webhook') {
-
-    bootJar { enabled = false }
-    jar { enabled = true }
-
-    dependencies {
-    }
 }
 
 project(':module-shared') {
@@ -204,5 +193,15 @@ project(':module-shared') {
     jar { enabled = true }
 
     dependencies {
+    }
+}
+
+project(':module-api') {
+
+    bootJar { enabled = true }
+    jar { enabled = false }
+
+    dependencies {
+        implementation project(':module-shared')
     }
 }

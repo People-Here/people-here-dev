@@ -1,4 +1,3 @@
 rootProject.name = 'peoplehere'
 include 'module-api'
-include 'module-webhook'
 include 'module-shared'
