@@ -1,0 +1,56 @@
+name: Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy-api:
+        description: Production API 서버 배포 🎉🤣
+        type: boolean
+        required: false
+      force-rebuild:
+        description: 강제 빌드
+        type: boolean
+        required: false
+      version-to-upgrade:
+        description: 배포 버전 업그레이드
+        type: choice
+        required: true
+        options:
+          - major
+          - minor
+          - patch
+        default: patch
+
+  push:
+    branches:
+      - main
+
+# https://github.com/gradle/gradle-build-action#caching
+permissions:
+  contents: write
+
+jobs:
+  #  build:
+  #    name: 빌드 & 테스트
+  #    concurrency:
+  #      group: ${{ github.workflow }}-${{ github.ref }}
+  #      cancel-in-progress: true
+  #    uses: ./.github/workflows/build.yml
+  #    with:
+  #      environment: production
+  #      COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+  #      API_SERVER: https://prod.peoplehere.world
+  #      STAGE: production
+  #      FORCE_REBUILD: ${{ inputs.force-rebuild == true }}
+  #    secrets: inherit
+
+  release:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    name: 릴리즈
+    uses: ./.github/workflows/release.yml
+    with:
+      environment: production
+      STAGE: production
+      CACHE_KEY: ${{ needs.build.outputs.CACHE_KEY }}
+      VERSION_TO_UPGRADE: ${{ github.event.inputs.version-to-upgrade }}
+    secrets: inherit

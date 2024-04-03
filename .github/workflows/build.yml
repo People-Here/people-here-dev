@@ -1,0 +1,87 @@
+name: 'People Here Dev Build'
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        type: string
+        required: true
+      COMMIT_MESSAGE:
+        type: string
+        required: true
+      API_SERVER:
+        required: true
+        type: string
+      STAGE:
+        required: true
+        type: string
+      FORCE_REBUILD:
+        required: false
+        type: boolean
+    outputs:
+      APP_VERSION:
+        value: ${{ jobs.build.outputs.APP_VERSION }}
+      CACHE_KEY:
+        value: ${{ jobs.build.outputs.CACHE_KEY }}
+
+env:
+  STAGE: ${{ inputs.STAGE }}
+  API_SERVER: ${{ inputs.API_SERVER}}
+  CACHE_KEY: ${{ github.ref }}-${{ inputs.environment }}-${{ github.sha }}
+
+
+#jobs:
+#  test:
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - uses: actions/checkout@v3
+#
+#      # java 셋업
+#      - name: Set up JDK 21
+#        if: steps.artifact-cache-restore.outputs.cache-hit != 'true'
+#        uses: actions/setup-java@v3
+#        with:
+#          distribution: 'corretto'
+#          java-version: '21'
+#
+#      - name: Start
+#        run: |
+#          echo "\
+#                                             ___               __                                 __      __
+#                                            /\_ \             /\ \                               /\ \    /\ \
+#           _____      __     ___    _____   \//\ \       __   \ \ \___       __    _ __     __   \ \ \   \ \ \
+#          /\ '__`\  /'__`\  / __`\ /\ '__`\   \ \ \    /'__`\  \ \  _ `\   /'__`\ /\`'__\ /'__`\  \ \ \   \ \ \
+#          \ \ \L\ \/\  __/ /\ \L\ \\ \ \L\ \   \_\ \_ /\  __/   \ \ \ \ \ /\  __/ \ \ \/ /\  __/   \ \_\   \ \_\
+#           \ \ ,__/\ \____\\ \____/ \ \ ,__/   /\____\\ \____\   \ \_\ \_\\ \____\ \ \_\ \ \____\   \/\_\   \/\_\
+#            \ \ \/  \/____/ \/___/   \ \ \/    \/____/ \/____/    \/_/\/_/ \/____/  \/_/  \/____/    \/_/    \/_/
+#             \ \_\                    \ \_\
+#              \/_/                     \/_/"
+#        shell: bash
+#
+#      - name: make application-secret.yml
+#        run: |
+#          cd ./backend/src/main/resources
+#          touch ./application-secret.yml
+#          echo "${{ secrets.LOCAL_SECRET_YML }}" > ./application-secret.yml
+#        shell: bash
+#
+#      - name: Grant execute permission for gradlew
+#        run: |
+#          cd ./backend
+#          chmod +x ./gradlew
+#        shell: bash
+#
+#      - name: Grant execute permission for git
+#        run: git config --global --add safe.directory /home/ubuntu/odongdong
+#
+#      - name: Build with Gradle
+#        run: |
+#          cd ./backend
+#          ./gradlew clean build -x test
+#        shell: bash
+#
+#      - name: Test with Gradle
+#        run: |
+#          cd ./backend
+#          ./gradlew test

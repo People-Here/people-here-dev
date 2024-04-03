@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    hikari:
+      jdbcUrl: ${github_datasource_jdbc_url}
+      username: ${github_datasource_username}
+      password: ${github_datasource_password}
+      maximum-pool-size: ${github_datasource_maximum_pool_size}
+      schema: ${github_datasource_schema}
+  data:
+    redis:
+      host: ${github_redis_host}
+      ssl-enabled: ${github_redis_ssl}
+
+webhook:
+  discord:
+    active: ${github_webhook_discord_active}
+    channel:
+      alert: ${github_webhook_discord_channel_alert}
+      status: ${github_webhook_discord_channel_status}
