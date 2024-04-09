@@ -1,4 +1,4 @@
-package com.peoplehere.api.common.config;
+package com.peoplehere.api.common.config.interceptor;
 
 import static com.peoplehere.api.common.util.RequestUtils.*;
 
@@ -7,6 +7,7 @@ import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import com.peoplehere.api.common.annotation.PrivateNetwork;
+import com.peoplehere.api.common.config.IpAccessManager;
 import com.peoplehere.api.common.exception.ForbiddenException;
 
 import jakarta.servlet.http.HttpServletRequest;

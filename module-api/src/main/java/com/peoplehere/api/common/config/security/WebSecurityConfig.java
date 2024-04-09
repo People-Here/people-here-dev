@@ -61,7 +61,7 @@ public class WebSecurityConfig {
 				authorizeRequests
 					.requestMatchers("/actuator/**", "/error-test")
 					.access((authentication, object) -> {
-						// 관리자면서 허용된 ip의 경우만 접근 가능
+						// 관리자 혹은 허용된 ip의 경우만 접근 가능
 						var isAdmin = authentication.get()
 							.getAuthorities()
 							.stream()
@@ -74,7 +74,7 @@ public class WebSecurityConfig {
 					.authenticated()
 
 					// 로그인 관련 경로 및 특정 uri의 경우 접근 허용
-					.requestMatchers("/api/account/**", "/test")
+					.requestMatchers("/api/account/**", "/test", "/api/tours/**", "/api/places/**", "/api/constants/**")
 					.permitAll()
 
 					// TODO: method annotation 으로 권한을 관리할 api

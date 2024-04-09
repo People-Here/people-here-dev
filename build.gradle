@@ -18,7 +18,13 @@ tasks.named('jar') {
     enabled = false
 }
 
-ext["testcontainersVersion"] = "1.19.6"
+
+allprojects {
+    ext {
+        queryDslVersion = "5.1.0"
+        testcontainersVersion = "1.19.6"
+    }
+}
 
 subprojects {
     group = 'com.peoplehere'
@@ -36,6 +42,7 @@ subprojects {
         compileOnly {
             extendsFrom annotationProcessor
         }
+        querydsl.extendsFrom compileClasspath
     }
 
     repositories {
@@ -73,6 +80,7 @@ subprojects {
         implementation 'org.springframework.boot:spring-boot-starter-actuator'
         implementation 'org.springframework.boot:spring-boot-starter-validation'
         implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+        implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
         // jwt
         implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
@@ -85,6 +93,13 @@ subprojects {
         // postgresql
         runtimeOnly 'org.postgresql:postgresql'
 
+        // QueryDSL
+        implementation "com.querydsl:querydsl-core:${queryDslVersion}"
+        implementation "com.querydsl:querydsl-jpa:${queryDslVersion}:jakarta"
+        annotationProcessor "com.querydsl:querydsl-apt:${queryDslVersion}:jakarta"
+        annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+        annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+
         testImplementation 'org.springframework.boot:spring-boot-starter-test'
         testImplementation 'org.springframework.security:spring-security-test'
         testImplementation platform('org.junit:junit-bom:5.9.1')
@@ -95,6 +110,12 @@ subprojects {
         testImplementation 'org.testcontainers:postgresql'
         testImplementation 'io.rest-assured:rest-assured'
 
+    }
+
+    //querydsl 셋업
+    def querydslSrcDir = 'src/main/generated'
+    tasks.withType(JavaCompile).configureEach {
+        options.generatedSourceOutputDirectory = file(querydslSrcDir)
     }
 
     dependencyManagement {

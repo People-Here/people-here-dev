@@ -72,3 +72,12 @@ token:
   refresh-key:
   access-time:
   refresh-time:
+
+map:
+  google:
+    project-id:
+    key:
+    base-url:
+    place-uri:
+    place-detail-uri:
+    geocode-uri:

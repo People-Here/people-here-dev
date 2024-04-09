@@ -101,6 +101,14 @@ public class Account extends BaseTimeEntity implements UserDetails {
 	@Comment("유저 활성화 여부")
 	private boolean active;
 
+	@Column(name = "direct_message_status")
+	@Comment("쪽지 활성화 여부")
+	private boolean directMessageStatus = true;
+
+	@Column(name = "profile_image_url")
+	@Comment("프로필 이미지")
+	private String profileImageUrl;
+
 	@Column(name = "deleted_at")
 	LocalDateTime deletedAt;
 

@@ -23,3 +23,12 @@ token:
 verify:
   email-timeout:
   phone-timeout:
+
+map:
+  google:
+    project-id:
+    key:
+    base-url:
+    place-url:
+    place-detail-url:
+    geocode-url:

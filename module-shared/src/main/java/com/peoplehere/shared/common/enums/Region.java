@@ -37,12 +37,21 @@ public enum Region {
 	CH("Swiss Confederation", "스위스", 41),
 	GB("United Kingdom of Great Britain and Northern Ireland", "영국", 44),
 
+	// South America
+	AR("Argentine Republic", "아르헨티나", 54),
+	BR("Federative Republic of Brazil", "브라질", 55),
+	CL("Republic of Chile", "칠레", 56),
+	CO("Republic of Colombia", "콜롬비아", 57),
+	PE("Republic of Peru", "페루", 51),
+	VE("Bolivarian Republic of Venezuela", "베네수엘라", 58),
+
 	// 아시아 태평양
 	AU("Commonwealth of Australia", "호주", 61),
 	JP("Japan", "일본", 81),
 	KR("Republic of Korea", "대한민국", 82),
 	RU("Russian Federation", "러시아", 7),
-	TW("Taiwan", "대만", 886);
+	TW("Taiwan", "대만", 886),
+	CN("People's Republic of China", "중국", 86);
 
 	private final String englishName;
 	private final String koreanName;
@@ -51,6 +60,7 @@ public enum Region {
 	public static final Region[] VALUES = values();
 	public static final List<RegionResponseDto> REGION_INFO_LIST = Stream.of(VALUES)
 		.map(region -> RegionResponseDto.builder()
+			.countryCode(region.name())
 			.englishName(region.getEnglishName())
 			.koreanName(region.getKoreanName())
 			.dialCode(region.getDialCode())
@@ -77,4 +87,12 @@ public enum Region {
 	public String getCountryCode() {
 		return name();
 	}
+
+	public String getMapLanguageCode() {
+		if (this == KR) {
+			return "ko-KR";
+		}
+		return "en-US";
+	}
+
 }

@@ -123,8 +123,8 @@ public class ErrorControllerAdvice {
 	 * 동일 사용자의 과다 요청이 발생하면 429 응답을 보냄
 	 */
 	@ExceptionHandler(value = AbusingException.class)
-	public ResponseEntity<Object> handleAbusing(AbusingException e) {
-		log.warn(e.getMessage());
+	public ResponseEntity<Object> handleAbusing(AbusingException exception) {
+		log.warn(exception.getMessage());
 		return ResponseEntity.status(TOO_MANY_REQUESTS).body(ERROR_500_BODY);
 	}
 
