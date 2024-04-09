@@ -1,0 +1,25 @@
+spring.config.activate.on-profile: prod
+
+spring:
+  mail:
+    host:
+    port:
+    username:
+    password:
+    properties:
+      mail:
+        smtp:
+          auth:
+          timeout: # read timeout
+          starttls:
+            enable:
+
+token:
+  access-key:
+  refresh-key:
+  access-time:
+  refresh-time:
+
+verify:
+  email-timeout:
+  phone-timeout:

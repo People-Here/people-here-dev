@@ -1,0 +1,37 @@
+name: 2. Staging 🚀
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy-api:
+        description: Staging API 서버 배포 🎉🤣
+        type: boolean
+        required: false
+      force-rebuild:
+        description: 강제 빌드
+        type: boolean
+        required: false
+
+  push:
+    branches:
+      - staging
+
+# https://github.com/gradle/gradle-build-action#caching
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: 빌드 & 테스트
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+    uses: ./.github/workflows/build.yml
+    with:
+      environment: staging
+      COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+      API_SERVER: https://stg.peoplehere.world
+      STAGE: develop
+      FORCE_REBUILD: ${{ inputs.force-rebuild == true }}
+    secrets: inherit
+

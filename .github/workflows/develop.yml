@@ -1,0 +1,64 @@
+name: 3. Develop 🚀
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy-api:
+        description: Develop API 서버 배포 🎉🤣
+        type: boolean
+        required: false
+      force-rebuild:
+        description: 강제 빌드
+        type: boolean
+        required: false
+
+  push:
+    branches:
+      - develop
+  #      - 'feature/**'
+  pull_request:
+    branches:
+      - develop
+
+# https://github.com/gradle/gradle-build-action#caching
+permissions:
+  contents: write
+
+# 현재는 develop은 build만 하고 deploy는 stage, production에서만 함
+jobs:
+  build:
+    name: 빌드 & 테스트
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+    uses: ./.github/workflows/build.yml
+    with:
+      environment: develop
+      COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+      API_SERVER: https://dev.peoplehere.world
+      STAGE: develop
+      FORCE_REBUILD: ${{ inputs.force-rebuild == true }}
+    secrets: inherit
+
+  deploy-api:
+    name: 배포 - API 서버 🚀🚀🚀
+    needs: [ build ]
+    if: ${{ contains(github.event.head_commit.message, '#api') || github.event.inputs.deploy-api == 'true' }}
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+    permissions:
+      id-token: write
+      contents: read
+    uses: ./.github/workflows/deploy-api.yml
+    with:
+      environment: develop
+      APP_VERSION: ${{ needs.build.outputs.APP_VERSION }}
+      CI_BUCKET_NAME: aicreation-ci
+      STAGE: develop
+      JAVA_OPTS:
+      LISTEN_STAGE: develop
+      CACHE_KEY: ${{ needs.build.outputs.CACHE_KEY }}
+    secrets: inherit
+
+

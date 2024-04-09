@@ -1,0 +1,120 @@
+name: 'People Here Dev Build'
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        type: string
+        required: true
+      COMMIT_MESSAGE:
+        type: string
+        required: true
+      API_SERVER:
+        required: true
+        type: string
+      STAGE:
+        required: true
+        type: string
+      FORCE_REBUILD:
+        required: false
+        type: boolean
+    outputs:
+      APP_VERSION:
+        value: ${{ jobs.build.outputs.APP_VERSION }}
+      CACHE_KEY:
+        value: ${{ jobs.build.outputs.CACHE_KEY }}
+
+env:
+  STAGE: ${{ inputs.STAGE }}
+  API_SERVER: ${{ inputs.API_SERVER}}
+  CACHE_KEY: ${{ github.ref }}-${{ inputs.environment }}-${{ github.sha }}
+
+jobs:
+  build:
+    name: Build & Test
+    environment: ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    outputs:
+      APP_VERSION: ${{ steps.app-version.outputs.APP_VERSION }}
+      CACHE_KEY: ${{ env.CACHE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 버전 세팅
+        id: app-version
+        run: |
+          BUILD_DATE=$(TZ=Asia/Seoul date +'%Y-%m-%d-%H-%M')
+          
+          case ${BRANCH_NAME} in
+            "main"|"staging"|"develop")
+              APP_VERSION="${STAGE:0:1}-${BUILD_DATE}"
+              ;;
+            "feature/"*)
+              ISSUE_NAME=$(echo "${BRANCH_NAME}" | sed -n 's/.*\(PH-[0-9]*\).*/\1/p') 
+              APP_VERSION="${ISSUE_NAME}-${BUILD_DATE}"
+              ;;
+            *)
+              APP_VERSION="${STAGE}-${{ github.run_id }}"
+              ;;
+          esac
+          
+          echo "APP_VERSION=${APP_VERSION}" | tee -a $GITHUB_ENV >> $GITHUB_OUTPUT  
+          echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_OUTPUT
+        shell: bash
+        env:
+          BRANCH_NAME: ${{ github.ref_name }}
+          STAGE: ${{ env.STAGE }}
+
+      - name: 캐시 재사용 체크
+        uses: actions/cache/restore@v4
+        if: inputs.FORCE_REBUILD != true
+        id: artifact-cache-restore
+        with:
+          path: |
+            .build/jar/*.jar
+          key: ${{ env.CACHE_KEY }}
+
+      - name: 버전정보 캐시정보 출력
+        run: |
+          echo "# 앱 버전 APP_VERSION [ ${{ env.APP_VERSION }} ]"
+          if [ "${{ steps.artifact-cache-restore.outputs.cache-hit }}" == "true" ]; then
+            echo "### 캐시 ✅ (key: ${{ env.CACHE_KEY }})" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### 캐시 없음 ❎ (key: ${{ env.CACHE_KEY }})" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+      # java 셋업
+      - name: Set up JDK 21
+        if: steps.artifact-cache-restore.outputs.cache-hit != 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'corretto'
+          java-version: '21'
+
+      # gradle caching
+      - uses: actions/cache@v4
+        name: Setup gradle cache
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+            ${{ runner.os }}-gradle-
+
+      - name: API 빌드 - JAR
+        if: steps.artifact-cache-restore.outputs.cache-hit != 'true'
+        uses: gradle/gradle-build-action@v3
+        with:
+          arguments: -i :module-api:build
+
+      - uses: actions/cache/save@v4
+        if: ${{ steps.artifact-cache-restore.outputs.cache-hit != 'true' &&  ! endsWith(steps.app-version.outputs.BRANCH_NAME, '/merge') }}
+        id: artifact-cache
+        with:
+          path: |
+            .build/jar/*.jar
+          key: ${{ env.CACHE_KEY }}

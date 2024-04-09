@@ -1,0 +1,53 @@
+name: 'People Here API Deploy'
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        type: string
+        required: true
+      APP_VERSION:
+        type: string
+        required: true
+      CI_BUCKET_NAME:
+        required: true
+        type: string
+      STAGE:
+        required: true
+        type: string
+      JAVA_OPTS:
+        required: false
+        type: string
+      LISTEN_STAGE:
+        required: true
+        type: string
+      CACHE_KEY:
+        required: true
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-deploy:
+    name: 배포용 tar 구성 및 공통스크립트 배포
+    environment: ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: 캐시 불러오기
+        uses: actions/cache/restore@v3
+        id: artifact-cache-restore
+        with:
+          path: |
+            .build/jar/*.jar
+          key: ${{ inputs.CACHE_KEY }}
+
+      - name: JAR 배치 - API
+        run: |
+          mv .build/jar/api.jar cicd/api/codedeploy/api.jar
+
+      - run: ls -al
+        working-directory: cicd/api/codedeploy

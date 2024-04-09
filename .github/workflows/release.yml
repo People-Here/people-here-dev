@@ -1,0 +1,117 @@
+name: 'peoplehere-release'
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        type: string
+        required: true
+      STAGE:
+        type: string
+        required: true
+      CACHE_KEY:
+        type: string
+        required: true
+      VERSION_TO_UPGRADE: # major.minor.patch
+        type: string
+        required: true
+    outputs:
+      APP_VERSION:
+        value: ${{ jobs.release.outputs.APP_VERSION }}
+      CACHE_KEY:
+        value: ${{ jobs.release.outputs.CACHE_KEY }}
+
+env:
+  owner: People-Here
+  repo: people-here-dev
+
+jobs:
+  release:
+    name: Release New Version
+    environment: ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    outputs:
+      APP_VERSION: ${{ env.new-version }}-${{ env.release-date }}
+      CACHE_KEY: ${{ inputs.CACHE_KEY }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: 캐시 불러오기
+        uses: actions/cache/restore@v3
+        id: artifact-cache-restore
+        with:
+          path: |
+            .build/jar/*.jar
+          key: ${{ inputs.CACHE_KEY }}
+
+      - name: Set Release Date
+        run: |
+          echo "release-date=$(TZ=Asia/Seoul date +'%Y-%m-%d')" >> $GITHUB_ENV
+
+      - name: 최신 릴리즈 버전 조회
+        id: get-latest-release
+        env:
+          GH_TOKEN: ${{ secrets.WORKFLOW_TOKEN }}
+        run: |
+          OLD_RELEASE=$(gh api \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            /repos/${{ env.owner }}/${{ env.repo }}/releases/latest)
+          
+          echo "old-release=${OLD_RELEASE}" >> $GITHUB_ENV
+        continue-on-error: true
+
+      - name: 릴리즈 버전 조회 실패 시 최초 릴리즈로 간주
+        if: ${{ steps.get-latest-release.outcome != 'success' }}
+        run: |
+          NEW_VERSION="v1.0.0"
+          echo "new-version=${NEW_VERSION}" >> $GITHUB_ENV
+
+      - name: 버전업
+        if: ${{ steps.get-latest-release.outcome == 'success' }}
+        run: |
+          OLD_VERSION=${{ fromJson(env.old-release).tag_name }}
+          echo "OLD_VERSION: ${OLD_VERSION}"
+          
+          MAJOR=$(echo $OLD_VERSION | cut -d. -f1 | sed 's/v//')
+          MINOR=$(echo $OLD_VERSION | cut -d. -f2)
+          PATCH=$(echo $OLD_VERSION | cut -d. -f3)
+          echo "major: $MAJOR, minor: $MINOR, patch: $PATCH"
+          
+          INCREMENT_TYPE=${{ inputs.VERSION_TO_UPGRADE }}
+          if [ "$INCREMENT_TYPE" == "major" ]; then
+            echo "upgrading major version"
+            MAJOR=$((++MAJOR))
+            MINOR=0
+            PATCH=0
+          elif [ "$INCREMENT_TYPE" == "minor" ]; then
+            echo "upgrading minor version"
+            MINOR=$((++MINOR))
+            PATCH=0
+          elif [ "$INCREMENT_TYPE" == "patch" ]; then
+            echo "upgrading patch version"
+            PATCH=$((++PATCH))
+          else
+            echo "Invalid increment type!"
+            exit 1
+          fi
+          
+          echo "NEW_VERSION: v$MAJOR.$MINOR.$PATCH"
+          NEW_VERSION="v$MAJOR.$MINOR.$PATCH"
+          echo "new-version=${NEW_VERSION}" >> $GITHUB_ENV
+
+      - name: 버전업 태그 생성
+        env:
+          GH_TOKEN: ${{ secrets.WORKFLOW_TOKEN }}
+        run: |
+          NEW_RELEASE=$(gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            /repos/${{ env.owner }}/${{ env.repo }}/releases \
+            -f tag_name=${{ env.new-version }} \
+            -f target_commitish='main' \
+            -f name=${{ env.new-version }} \
+            -f body='${{ env.new-version }} release')
+          
+          echo "new-release=${NEW_RELEASE}" >> $GITHUB_ENV

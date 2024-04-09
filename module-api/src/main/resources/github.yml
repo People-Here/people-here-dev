@@ -1,0 +1,27 @@
+spring:
+  mail:
+    host: ${github_mail_host}
+    port: ${github_mail_port}
+    username: ${github_mail_username}
+    password: ${github_mail_password}
+    properties:
+      mail:
+        smtp:
+          auth: ${github_mail_auth}
+          timeout: ${github_mail_timeout} # read timeout
+          starttls:
+            enable: ${github_mail_starttls}
+
+whitelist:
+  metrics: ${API_WHITELIST_METRICS}
+  private: ${API_WHITELIST_PRIVATE}
+
+token:
+  access-key: ${github_access_key}
+  refresh-key: ${github_refresh_key}
+  access-time: ${github_access_time}
+  refresh-time: ${github_refresh_time}
+
+verify:
+  email-timeout: ${github_verify_email_timeout}
+  phone-timeout: ${github_verify_phone_timeout}
