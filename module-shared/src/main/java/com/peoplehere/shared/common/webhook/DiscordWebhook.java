@@ -9,6 +9,7 @@ import java.util.Collections;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -70,6 +71,23 @@ public class DiscordWebhook implements AlertWebhook {
 		}
 	}
 
+	/**
+	 * spring application 종료시 시간 및 ip 기록(의도치 않은 종료 체크)
+	 * @param event
+	 */
+	@EventListener(ContextClosedEvent.class)
+	public void onClosed(ContextClosedEvent event) {
+		isInit = StringUtils.hasText(alertChannel) && StringUtils.hasText(serverStatusChannel);
+		if (isInit) {
+			String title = "[%s] 어플리케이션 종료".formatted(appName);
+			String description = "public: %s | local: %s".formatted(publicIp, localIp);
+			String fieldContent = "%s초".formatted(((double)ManagementFactory.getRuntimeMXBean().getUptime() / 1000));
+			DiscordMessage message = toMessage(title, description, COLOR_GREEN,
+				Collections.singletonList(new EmbedObject.Field("spring closed", fieldContent, true)));
+			sendMessage(serverStatusChannel, message);
+		}
+	}
+
 	@Override
 	public void alertInfo(String title, String infoMessage) {
 
@@ -93,7 +111,7 @@ public class DiscordWebhook implements AlertWebhook {
 
 	/**
 	 * 디스코드 웹훅 전송
-	 * Todo: 추후 에러 응답이 자주 발생할 경우 retry 로직 추가 및 read timeout 조정 우선은 30초
+	 * Todo: 추후 에러 응답이 자주 발생할 경우 retry 로직 추가 및 read timeout 조정 우선은 10초
 	 * @param channel
 	 * @param message
 	 */
