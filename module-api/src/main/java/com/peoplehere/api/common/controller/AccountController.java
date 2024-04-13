@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.peoplehere.api.common.annotation.CheckAbusing;
 import com.peoplehere.api.common.annotation.CheckEmailVerificationLimit;
 import com.peoplehere.api.common.annotation.CheckEmailVerifyLimit;
 import com.peoplehere.api.common.data.request.MailVerificationRequestDto;
@@ -155,6 +156,7 @@ public class AccountController {
 	 * @return 인증번호 만료시간
 	 * @throws ClientBindException
 	 */
+	@CheckAbusing
 	@CheckEmailVerificationLimit
 	@PostMapping("/email/verification")
 	public ResponseEntity<MailVerificationResponseDto> sendEmailVerificationCode(

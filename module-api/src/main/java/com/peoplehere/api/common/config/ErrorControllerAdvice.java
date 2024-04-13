@@ -16,6 +16,7 @@ import com.peoplehere.api.common.exception.AccountIdNotFoundException;
 import com.peoplehere.api.common.exception.ClientBindException;
 import com.peoplehere.api.common.exception.DuplicateException;
 import com.peoplehere.api.common.exception.ForbiddenException;
+import com.peoplehere.api.common.exception.RequestLimitException;
 import com.peoplehere.shared.common.data.response.ErrorResponseDto;
 import com.peoplehere.shared.common.webhook.AlertWebhook;
 
@@ -126,6 +127,15 @@ public class ErrorControllerAdvice {
 	public ResponseEntity<Object> handleAbusing(AbusingException exception) {
 		log.warn(exception.getMessage());
 		return ResponseEntity.status(TOO_MANY_REQUESTS).body(ERROR_500_BODY);
+	}
+
+	/**
+	 * 요청 제한 api에 대한 동일 사용자의 초과 요청 발생하면 403 응답을 보냄
+	 */
+	@ExceptionHandler(value = RequestLimitException.class)
+	public ResponseEntity<Object> handleRequestLimit(RequestLimitException exception) {
+		log.warn(exception.getMessage());
+		return ResponseEntity.status(FORBIDDEN).body(FORBIDDEN_403_BODY);
 	}
 
 	/**

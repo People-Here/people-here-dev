@@ -69,7 +69,8 @@ public class RedisConfig {
 	public RedisTemplate<String, Integer> stringIntegerRedisTemplate(RedisConnectionFactory connectionFactory) {
 		var redisTemplate = new RedisTemplate<String, Integer>();
 		redisTemplate.setConnectionFactory(connectionFactory);
-
+		redisTemplate.setKeySerializer(new StringRedisSerializer());
+		redisTemplate.setValueSerializer(new StringRedisSerializer());
 		return redisTemplate;
 	}
 

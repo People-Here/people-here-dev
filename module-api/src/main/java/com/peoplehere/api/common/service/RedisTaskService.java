@@ -40,7 +40,7 @@ public class RedisTaskService {
 	public void setRefreshToken(Token token, String userId) {
 		String key = generateRefreshTokenKey(stage, userId);
 		redisTemplate.opsForValue()
-			.set(key, token.refreshToken(), tokenProperties.getRefreshTime(), TimeUnit.MICROSECONDS);
+			.set(key, token.refreshToken(), tokenProperties.getRefreshTime(), TimeUnit.MILLISECONDS);
 		log.info("refresh token 저장 성공 - userId: {}", userId);
 	}
 
