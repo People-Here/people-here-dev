@@ -73,10 +73,8 @@ public class AccountService {
 	}
 
 	@Transactional(readOnly = true)
-	public void checkEmail(String email) {
-		if (accountRepository.existsByEmail(email)) {
-			throw new DuplicateException(email);
-		}
+	public boolean checkEmailExist(String email) {
+		return accountRepository.existsByEmail(email);
 	}
 
 	@Transactional

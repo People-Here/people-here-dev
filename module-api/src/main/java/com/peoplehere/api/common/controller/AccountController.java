@@ -1,6 +1,7 @@
 package com.peoplehere.api.common.controller;
 
 import static com.peoplehere.shared.common.util.PatternUtils.*;
+import static org.springframework.http.HttpStatus.*;
 
 import java.security.Principal;
 
@@ -23,6 +24,7 @@ import com.peoplehere.api.common.data.request.MailVerificationRequestDto;
 import com.peoplehere.api.common.data.request.MailVerifyRequestDto;
 import com.peoplehere.api.common.data.response.MailVerificationResponseDto;
 import com.peoplehere.api.common.exception.ClientBindException;
+import com.peoplehere.api.common.exception.DuplicateException;
 import com.peoplehere.api.common.service.AccountService;
 import com.peoplehere.api.common.service.VerifyService;
 import com.peoplehere.shared.common.data.request.AlarmConsentRequestDto;
@@ -109,13 +111,32 @@ public class AccountController {
 	 * @return
 	 */
 	@GetMapping("/email/check")
-	public ResponseEntity<String> checkEmail(@RequestParam String email) {
+	public ResponseEntity<String> checkEmailDuplicate(@RequestParam String email) {
 		if (!EMAIL_PATTERN.matcher(email).matches()) {
 			log.error("이메일 형식 오류: {}", email);
 			return ResponseEntity.badRequest().build();
 		}
-		accountService.checkEmail(email);
+		if (accountService.checkEmailExist(email)) {
+			throw new DuplicateException(email);
+		}
 		return ResponseEntity.ok().body("success");
+	}
+
+	/**
+	 * 비밀번호 재설정을 위한 이메일 유효성(db에 존재하는지) 체크
+	 * @param email 이메일
+	 * @return
+	 */
+	@GetMapping("/email/exist")
+	public ResponseEntity<String> checkEmailExist(@RequestParam String email) {
+		if (!EMAIL_PATTERN.matcher(email).matches()) {
+			log.error("이메일 형식 오류: {}", email);
+			return ResponseEntity.badRequest().build();
+		}
+		if (accountService.checkEmailExist(email)) {
+			return ResponseEntity.ok().body("success");
+		}
+		return ResponseEntity.status(NOT_FOUND).body("해당 이메일: [%s]이 존재하지 않습니다".formatted(email));
 	}
 
 	/**
