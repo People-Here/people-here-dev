@@ -14,13 +14,16 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.peoplehere.shared.common.converter.LangCodeConverter;
 import com.peoplehere.shared.common.enums.AccountAuthority;
 import com.peoplehere.shared.common.enums.AccountRole;
 import com.peoplehere.shared.common.enums.Gender;
+import com.peoplehere.shared.common.enums.LangCode;
 import com.peoplehere.shared.common.enums.Region;
 
 import io.hypersistence.utils.hibernate.id.Tsid;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -83,6 +86,11 @@ public class Account extends BaseTimeEntity implements UserDetails {
 	@Enumerated(EnumType.STRING)
 	private Region region;
 
+	@Column(name = "languages")
+	@Comment("언어목록")
+	@Convert(converter = LangCodeConverter.class)
+	private List<LangCode> langCodeList;
+
 	@Column(name = "birth_date")
 	@Comment("생년월일")
 	private LocalDate birthDate;
@@ -103,6 +111,7 @@ public class Account extends BaseTimeEntity implements UserDetails {
 
 	@Column(name = "direct_message_status")
 	@Comment("쪽지 활성화 여부")
+	@Builder.Default
 	private boolean directMessageStatus = true;
 
 	@Column(name = "profile_image_url")
@@ -173,5 +182,10 @@ public class Account extends BaseTimeEntity implements UserDetails {
 
 	public void updatePassword(String encodedPassword) {
 		this.password = encodedPassword;
+	}
+
+	public void deactivate() {
+		this.active = false;
+		this.deletedAt = LocalDateTime.now();
 	}
 }

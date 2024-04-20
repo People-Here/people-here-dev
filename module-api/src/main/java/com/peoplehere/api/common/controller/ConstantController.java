@@ -1,5 +1,6 @@
 package com.peoplehere.api.common.controller;
 
+import static com.peoplehere.shared.common.enums.LangCode.*;
 import static com.peoplehere.shared.common.enums.Region.*;
 
 import java.util.List;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.peoplehere.shared.common.data.response.LanguageResponseDto;
 import com.peoplehere.shared.common.data.response.RegionResponseDto;
 import com.peoplehere.shared.common.enums.Gender;
 
@@ -28,6 +30,11 @@ public class ConstantController {
 	@GetMapping("/regions")
 	public ResponseEntity<List<RegionResponseDto>> getRegions() {
 		return ResponseEntity.ok(REGION_INFO_LIST);
+	}
+
+	@GetMapping("/langs")
+	public ResponseEntity<List<LanguageResponseDto>> getLanguages() {
+		return ResponseEntity.ok(LANGUAGE_INFO_LIST);
 	}
 }
 

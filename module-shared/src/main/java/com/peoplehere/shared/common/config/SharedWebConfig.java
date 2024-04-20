@@ -3,6 +3,8 @@ package com.peoplehere.shared.common.config;
 import static org.springframework.http.HttpHeaders.*;
 import static org.springframework.http.MediaType.*;
 
+import java.util.TimeZone;
+
 import javax.sql.DataSource;
 
 import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
@@ -17,6 +19,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.zaxxer.hikari.HikariDataSource;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,6 +27,14 @@ import lombok.extern.slf4j.Slf4j;
 @Configuration
 @RequiredArgsConstructor
 public class SharedWebConfig implements WebMvcConfigurer {
+
+	/**
+	 * 서버 시작시 한국 시간대로 설정
+	 */
+	@PostConstruct
+	public void init() {
+		TimeZone.setDefault(TimeZone.getTimeZone("Asia/Seoul"));
+	}
 
 	/**
 	 * hikariCp 설정을 위한 Config

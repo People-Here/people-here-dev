@@ -2,12 +2,14 @@ package com.peoplehere.shared.common.data.request;
 
 import static com.peoplehere.shared.common.util.PatternUtils.*;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
-// todo: 정규표현식 중복 제거
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PasswordRequestDto {
 
 	@NotBlank

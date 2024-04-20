@@ -9,7 +9,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -76,7 +78,7 @@ public class AccountController {
 	@PostMapping("/sign-in")
 	public ResponseEntity<AccountResponseDto> signIn(@Validated @RequestBody SignInRequestDto requestDto,
 		BindingResult result) throws
-		BindException {
+		ClientBindException {
 
 		if (result.hasErrors()) {
 			throw new ClientBindException(result);
@@ -201,5 +203,16 @@ public class AccountController {
 	@PostMapping("/email/verify")
 	public ResponseEntity<Boolean> checkEmailVerifyCode(@Validated @RequestBody MailVerifyRequestDto requestDto) {
 		return ResponseEntity.ok().body(verifyService.checkEmailVerifyCode(requestDto));
+	}
+
+	@DeleteMapping("{accountId}")
+	public ResponseEntity<String> deleteAccount(@PathVariable long accountId) {
+		try {
+			accountService.deactivateAccount(accountId);
+			return ResponseEntity.ok().body("success");
+		} catch (Exception e) {
+			log.error("계정: {} 비활성화 중 오류 발생", accountId, e);
+			return ResponseEntity.internalServerError().build();
+		}
 	}
 }
