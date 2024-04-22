@@ -1,5 +1,6 @@
 package com.peoplehere.shared.common.enums;
 
+import static com.peoplehere.shared.common.enums.LangCode.*;
 import static java.util.stream.Collectors.*;
 
 import java.util.List;
@@ -88,11 +89,17 @@ public enum Region {
 		return name();
 	}
 
-	public String getMapLanguageCode() {
-		if (this == KR) {
-			return "ko-KR";
+	/**
+	 * 나라에 해당하는 언어 코드 반환
+	 * 나라가 한국인 경우 원문 반환
+	 * 그외의 나라의 경우 영어 반환
+	 * @return
+	 */
+	public LangCode getMapLangCode() {
+		if (KR.equals(this)) {
+			return ORIGIN;
 		}
-		return "en-US";
+		return ENGLISH;
 	}
 
 }

@@ -61,7 +61,7 @@ public class GoogleMapServiceImpl implements MapService {
 				.path(googleMapProperties.getPlaceUri())
 				.queryParam("key", googleMapProperties.getKey())
 				.queryParam("input", name)
-				.queryParam("language", region.getMapLanguageCode())
+				.queryParam("language", region.getMapLangCode().getCode())
 				.build())
 			.retrieve()
 			.onStatus(

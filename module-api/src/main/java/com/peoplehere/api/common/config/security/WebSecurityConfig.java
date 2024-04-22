@@ -70,16 +70,13 @@ public class WebSecurityConfig {
 							isAdmin || ipAccessManager.isMetricNetwork(object.getRequest()));
 					})
 
-					.requestMatchers("/api/account/alarm")
+					.requestMatchers("/api/account/alarm", "/api/user")
 					.authenticated()
 
 					// 로그인 관련 경로 및 특정 uri의 경우 접근 허용
-					.requestMatchers("/api/account/**", "/test", "/api/tours/**", "/api/places/**", "/api/constants/**")
+					.requestMatchers("/api/account/**", "/test", "/api/tours/**", "/api/places/**", "/api/constants/**",
+						"/api/user/{accountId}/{region}")
 					.permitAll()
-
-					// TODO: method annotation 으로 권한을 관리할 api
-					// .requestMatchers("")
-					// .permitAll()
 
 					// health check
 					.requestMatchers("/api/health")

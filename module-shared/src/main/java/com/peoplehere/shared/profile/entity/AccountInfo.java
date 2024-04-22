@@ -68,13 +68,12 @@ public class AccountInfo extends BaseTimeEntity {
 	@Comment("직업")
 	private String job;
 
-	public void updateInfo(ProfileInfoRequestDto requestDto) {
-		this.langCode = requestDto.getRegion().getMapLangCode();
-		this.introduce = requestDto.getIntroduce();
-		this.favorite = requestDto.getFavorite();
-		this.hobby = requestDto.getHobby();
-		this.pet = requestDto.getPet();
-		this.school = requestDto.getSchool();
-		this.job = requestDto.getJob();
+	public void updateOriginalInfo(ProfileInfoRequestDto requestDto) {
+		this.introduce = requestDto.introduce();
+		this.favorite = requestDto.favorite();
+		this.hobby = requestDto.hobby();
+		this.pet = requestDto.pet();
+		this.school = requestDto.school();
+		this.job = requestDto.job();
 	}
 }

@@ -197,9 +197,18 @@ public class Account extends BaseTimeEntity implements UserDetails {
 		this.deletedAt = LocalDateTime.now();
 	}
 
-	public void updateInfo(ProfileInfoRequestDto requestDto, String profileImageUrl) {
-		this.langCodeList = requestDto.getLanguages();
-		this.placeId = requestDto.getPlaceId();
+	public void updateInfo(ProfileInfoRequestDto requestDto) {
+		this.langCodeList = requestDto.languages();
+		this.placeId = requestDto.placeId();
+	}
+
+	/**
+	 * 프로필 이미지 url 업데이트
+	 * 최적화된 프로필 이미지의 경우 비동기로 처리되기 때문에 갱신시 최적화된 이미지 url은 null로 초기화(원본 != 최적화 이미지 방지)
+	 * @param profileImageUrl
+	 */
+	public void updateProfileImageUrl(String profileImageUrl) {
 		this.profileImageUrl = profileImageUrl;
+		this.optimizedProfileImageUrl = null;
 	}
 }

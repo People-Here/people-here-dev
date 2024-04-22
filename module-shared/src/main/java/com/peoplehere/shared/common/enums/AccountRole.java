@@ -17,12 +17,14 @@ public enum AccountRole {
 		AccountAuthority.CHANGE_ROLE,
 		AccountAuthority.ACTIVE_USER,
 		AccountAuthority.READ_TOUR_POST,
-		AccountAuthority.CREATE_TOUR
+		AccountAuthority.CREATE_TOUR,
+		AccountAuthority.UPDATE_PROFILE
 	)),
 
 	USER("ROLE_USER", Arrays.asList(
 		AccountAuthority.READ_TOUR_POST,
-		AccountAuthority.CREATE_TOUR
+		AccountAuthority.CREATE_TOUR,
+		AccountAuthority.UPDATE_PROFILE
 	));
 
 	private final String value;

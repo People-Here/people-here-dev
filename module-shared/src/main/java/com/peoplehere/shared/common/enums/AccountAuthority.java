@@ -16,7 +16,8 @@ public enum AccountAuthority {
 	CHANGE_ROLE,
 	ACTIVE_USER,
 	READ_TOUR_POST,
-	CREATE_TOUR;
+	CREATE_TOUR,
+	UPDATE_PROFILE;
 
 	public String getValue() {
 		return this.name();

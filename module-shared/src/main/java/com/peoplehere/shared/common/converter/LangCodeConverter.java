@@ -22,7 +22,7 @@ public class LangCodeConverter implements AttributeConverter<List<LangCode>, Str
 			return "";
 		}
 		return attribute.stream()
-			.map(LangCode::getKoreanName)
+			.map(LangCode::name)
 			.collect(joining(SPLIT_CHAR));
 	}
 
@@ -32,7 +32,7 @@ public class LangCodeConverter implements AttributeConverter<List<LangCode>, Str
 			return Collections.emptyList();
 		}
 		return Arrays.stream(dbData.split(SPLIT_CHAR))
-			.map(LangCode::fromKoreanName)
+			.map(LangCode::valueOf)
 			.collect(toList());
 	}
 }

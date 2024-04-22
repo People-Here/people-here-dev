@@ -1,6 +1,7 @@
 package com.peoplehere.api.common.service;
 
 import static com.peoplehere.shared.common.data.request.SignUpRequestDto.*;
+import static com.peoplehere.shared.common.enums.LangCode.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,6 +27,8 @@ import com.peoplehere.shared.common.repository.AccountRepository;
 import com.peoplehere.shared.common.repository.ConsentRepository;
 import com.peoplehere.shared.common.repository.CustomAccountRepository;
 import com.peoplehere.shared.common.webhook.AlertWebhook;
+import com.peoplehere.shared.profile.entity.AccountInfo;
+import com.peoplehere.shared.profile.repository.AccountInfoRepository;
 import com.peoplehere.shared.tour.repository.TourRepository;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -38,6 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AccountService {
 
 	private final AccountRepository accountRepository;
+	private final AccountInfoRepository accountInfoRepository;
 	private final CustomAccountRepository customAccountRepository;
 	private final ConsentRepository consentRepository;
 	private final TourRepository tourRepository;
@@ -47,13 +51,23 @@ public class AccountService {
 	private final RedisTaskService redisTaskService;
 	private final AlertWebhook alertWebhook;
 
+	/**
+	 * 회원가입시 사용자 정보를 저장하고, 동의 정보를 저장한다
+	 * @param requestDto
+	 */
 	@Transactional
 	public void signUp(SignUpRequestDto requestDto) {
 		if (accountRepository.existsByEmail(requestDto.getEmail())) {
 			throw new DuplicateException(requestDto.getEmail());
 		}
 		String encodedPassword = passwordEncoder.encode(requestDto.getPassword());
+
 		Account account = accountRepository.save(toClientAccount(requestDto, encodedPassword));
+		AccountInfo accountInfo = AccountInfo.builder()
+			.accountId(account.getId())
+			.langCode(ORIGIN)
+			.build();
+		accountInfoRepository.save(accountInfo);
 		consentRepository.save(toConsent(requestDto, account));
 	}
 
