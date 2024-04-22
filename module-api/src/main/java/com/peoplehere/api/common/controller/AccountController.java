@@ -152,7 +152,7 @@ public class AccountController {
 		if (result.hasErrors()) {
 			throw new BindException(result);
 		}
-		accountService.modifyAlarmConsent(principal.getName(), requestDto.isConsent());
+		accountService.updateAlarmConsent(principal.getName(), requestDto.isConsent());
 		return ResponseEntity.ok().body("success");
 	}
 

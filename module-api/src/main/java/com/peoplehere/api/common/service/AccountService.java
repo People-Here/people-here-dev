@@ -88,7 +88,7 @@ public class AccountService {
 	}
 
 	@Transactional
-	public void modifyAlarmConsent(String userId, boolean alarmConsent) {
+	public void updateAlarmConsent(String userId, boolean alarmConsent) {
 		Account account = accountRepository.findByEmail(userId)
 			.orElseThrow(() -> new AccountIdNotFoundException(userId));
 		Consent consent = consentRepository.findByAccountId(account.getId())

@@ -36,7 +36,7 @@ public class Tour extends BaseTimeEntity {
 
 	@NotNull
 	@Column(name = "place_id", nullable = false)
-	private long placeId;
+	private String placeId;
 
 	@NotNull
 	@Comment("제목")

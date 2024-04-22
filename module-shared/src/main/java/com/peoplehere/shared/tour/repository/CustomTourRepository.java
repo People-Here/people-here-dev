@@ -47,13 +47,13 @@ public class CustomTourRepository {
 	private JPAQuery<Tour> findTourWithJoinData() {
 		return queryFactory.select(tour)
 			.from(tour)
-			.join(account).on(tour.accountId.eq(account.id))
-			.join(place).on(tour.placeId.eq(place.id))
+			.leftJoin(account).on(tour.accountId.eq(account.id))
+			.leftJoin(place).on(tour.placeId.eq(place.placeId))
 			.leftJoin(tourCategory).on(tour.id.eq(tourCategory.tourId))
 			.leftJoin(category).on(tourCategory.categoryId.eq(category.id))
 			.leftJoin(tourImage).on(tour.id.eq(tourImage.tourId))
-			.orderBy(tour.id.desc());
-
+			.orderBy(tour.id.desc())
+			.distinct();
 	}
 
 	private QBean<TourResponseDto> tourResponseDtoQBean() {

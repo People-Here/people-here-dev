@@ -20,6 +20,7 @@ import com.peoplehere.shared.common.enums.AccountRole;
 import com.peoplehere.shared.common.enums.Gender;
 import com.peoplehere.shared.common.enums.LangCode;
 import com.peoplehere.shared.common.enums.Region;
+import com.peoplehere.shared.profile.data.request.ProfileInfoRequestDto;
 
 import io.hypersistence.utils.hibernate.id.Tsid;
 import jakarta.persistence.Column;
@@ -118,6 +119,13 @@ public class Account extends BaseTimeEntity implements UserDetails {
 	@Comment("프로필 이미지")
 	private String profileImageUrl;
 
+	@Column(name = "optimized_profile_image_url")
+	@Comment("최적화 프로필 이미지")
+	private String optimizedProfileImageUrl;
+
+	@Column(name = "place_id")
+	private String placeId;
+
 	@Column(name = "deleted_at")
 	LocalDateTime deletedAt;
 
@@ -187,5 +195,11 @@ public class Account extends BaseTimeEntity implements UserDetails {
 	public void deactivate() {
 		this.active = false;
 		this.deletedAt = LocalDateTime.now();
+	}
+
+	public void updateInfo(ProfileInfoRequestDto requestDto, String profileImageUrl) {
+		this.langCodeList = requestDto.getLanguages();
+		this.placeId = requestDto.getPlaceId();
+		this.profileImageUrl = profileImageUrl;
 	}
 }
