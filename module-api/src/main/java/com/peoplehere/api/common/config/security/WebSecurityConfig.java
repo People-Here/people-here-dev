@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -70,8 +71,10 @@ public class WebSecurityConfig {
 							isAdmin || ipAccessManager.isMetricNetwork(object.getRequest()));
 					})
 
-					.requestMatchers("/api/account/alarm", "/api/user")
+					.requestMatchers("/api/account/alarm", "/api/user", "/api/tours")
 					.authenticated()
+
+					.requestMatchers(HttpMethod.DELETE, "/api/account/{accountId}").authenticated()
 
 					// 로그인 관련 경로 및 특정 uri의 경우 접근 허용
 					.requestMatchers("/api/account/**", "/test", "/api/tours/**", "/api/places/**", "/api/constants/**",

@@ -3,6 +3,7 @@ package com.peoplehere.shared.tour.entity;
 import org.hibernate.annotations.Comment;
 
 import com.peoplehere.shared.common.entity.BaseTimeEntity;
+import com.peoplehere.shared.tour.data.request.TourUpdateRequestDto;
 
 import io.hypersistence.utils.hibernate.id.Tsid;
 import jakarta.persistence.Column;
@@ -38,12 +39,17 @@ public class Tour extends BaseTimeEntity {
 	@Column(name = "place_id", nullable = false)
 	private String placeId;
 
-	@NotNull
-	@Comment("제목")
-	@Column(nullable = false)
-	private String title;
-
 	@Column(name = "is_default_image")
 	@Comment("기본 이미지 사용 여부")
 	private Boolean isDefaultImage;
+
+	@Column(name = "theme")
+	@Comment("테마")
+	private String theme;
+
+	public void updateInfo(TourUpdateRequestDto requestDto) {
+		this.placeId = requestDto.placeId();
+		this.theme = requestDto.theme();
+		this.isDefaultImage = requestDto.isDefaultImage();
+	}
 }

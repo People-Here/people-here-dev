@@ -5,6 +5,8 @@ import static com.peoplehere.shared.common.config.file.FileKeyProperties.*;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import org.apache.commons.io.FilenameUtils;
@@ -31,10 +33,33 @@ public class S3FileService implements FileService {
 	private final S3FileProperties s3FileProperties;
 
 	@Override
-	public String uploadFileAndGetFileInfo(long accountId, MultipartFile file) {
+	public String uploadFileAndGetFileInfo(long id, MultipartFile file) {
+		String key = generateProfileImageKey(s3FileProperties.getPrefix(), id,
+			FilenameUtils.getExtension(file.getOriginalFilename()));
+		uploadFile(file, key);
+
+		return toCloudFrontUrl(getFileUrl(s3FileProperties.getBucketName(), key));
+	}
+
+	@Override
+	public List<String> uploadFileListAndGetFileInfoList(long id, List<MultipartFile> fileList) {
+		List<String> urlList = new ArrayList<>();
+		for (MultipartFile file : fileList) {
+			String key = generateTourImageKey(s3FileProperties.getPrefix(), id,
+				FilenameUtils.getExtension(file.getOriginalFilename()));
+			uploadFile(file, key);
+			urlList.add(toCloudFrontUrl(getFileUrl(s3FileProperties.getBucketName(), key)));
+		}
+		return urlList;
+	}
+
+	@Override
+	public void deleteFile() {
+
+	}
+
+	private void uploadFile(MultipartFile file, String key) {
 		String fileName = file.getOriginalFilename();
-		String key = generateProfileImageKey(s3FileProperties.getPrefix(), accountId,
-			FilenameUtils.getExtension(fileName));
 
 		PutObjectRequest putObjectRequest = PutObjectRequest.builder()
 			.bucket(s3FileProperties.getBucketName())
@@ -49,25 +74,23 @@ public class S3FileService implements FileService {
 		try {
 			s3Client.putObject(putObjectRequest, RequestBody.fromBytes(file.getBytes()));
 		} catch (IOException e) {
-			log.info("파일 업로드 중 에러 발생: {}", file.getOriginalFilename());
+			log.error("파일 업로드 중 에러 발생: {}", file.getOriginalFilename());
 			throw new RuntimeException(e);
 		}
-		return toCloudFrontUrl(getFileUrl(s3FileProperties.getBucketName(), key));
-
-	}
-
-	@Override
-	public void deleteFile() {
-
 	}
 
 	private String getFileUrl(String bucketName, String key) {
-		return s3Client.utilities().getUrl(
-			GetUrlRequest.builder()
-				.bucket(bucketName)
-				.key(key)
-				.build()
-		).toString();
+		try {
+			return s3Client.utilities().getUrl(
+				GetUrlRequest.builder()
+					.bucket(bucketName)
+					.key(key)
+					.build()
+			).toString();
+		} catch (Exception exception) {
+			log.error("파일 URL 조회 중 에러 발생: {}, {}", bucketName, key);
+			throw new RuntimeException(exception);
+		}
 	}
 
 	private String toCloudFrontUrl(String url) {

@@ -11,11 +11,22 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class FileKeyProperties {
 
-	public static String generateProfileImageKey(String serverPrefix, long accountId, String extension) {
+	public static String generateProfileImageKey(String serverPrefix, long id, String extension) {
 		return "%s/%s/%s/%s-%s.%s".formatted(
 			serverPrefix,
-			accountId,
+			id,
 			PROFILE_IMAGE.getFilePathPrefix(),
+			LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd/HH")),
+			UUID.randomUUID(),
+			extension
+		);
+	}
+
+	public static String generateTourImageKey(String serverPrefix, long id, String extension) {
+		return "%s/%s/%s/%s-%s.%s".formatted(
+			serverPrefix,
+			id,
+			TOUR_IMAGE.getFilePathPrefix(),
 			LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd/HH")),
 			UUID.randomUUID(),
 			extension

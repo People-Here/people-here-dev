@@ -8,6 +8,8 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class RequestUtils {
 
+	private static final String DEVICE_IDENTIFIER = "Identifier";
+
 	/**
 	 * @param request
 	 * @return ip 종류 여러개 셋팅되어 올 수 있음
@@ -31,14 +33,12 @@ public class RequestUtils {
 
 	/**
 	 * 사용자의 요청에 대한 제한을 위한 key 생성
-	 * TODO: 추후 기기id로 check 현재는 ip 주소로 체크
+	 * 기가 id로 체크 후 없으면 ip로 체크
 	 * @param request
 	 * @return
 	 */
 	public static String getRequestKey(HttpServletRequest request) {
-		String key = null;
-		// todo: 추후 기기id로 check
-		// String key = request.getHeader("d-id");
+		String key = request.getHeader(DEVICE_IDENTIFIER);
 
 		// 혹시라도 가져오지 못한 경우 ip 주소로라도 체크
 		if (!StringUtils.hasText(key)) {

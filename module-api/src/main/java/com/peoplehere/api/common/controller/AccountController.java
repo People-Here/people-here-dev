@@ -168,8 +168,13 @@ public class AccountController {
 		if (result.hasErrors()) {
 			throw new ClientBindException(result);
 		}
-		return ResponseEntity.ok(
-			accountService.reissueToken(requestDto.getAccessToken(), requestDto.getRefreshToken()));
+		try {
+			return ResponseEntity.ok(
+				accountService.reissueToken(requestDto.getAccessToken(), requestDto.getRefreshToken()));
+		} catch (Exception exception) {
+			log.error("토큰 재발급 실패", exception);
+			return ResponseEntity.badRequest().build();
+		}
 	}
 
 	/**
@@ -205,7 +210,7 @@ public class AccountController {
 		return ResponseEntity.ok().body(verifyService.checkEmailVerifyCode(requestDto));
 	}
 
-	@DeleteMapping("{accountId}")
+	@DeleteMapping("/{accountId}")
 	public ResponseEntity<String> deleteAccount(@PathVariable long accountId) {
 		try {
 			accountService.deactivateAccount(accountId);

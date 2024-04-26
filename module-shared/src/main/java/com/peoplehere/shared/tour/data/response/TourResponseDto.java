@@ -1,7 +1,11 @@
 package com.peoplehere.shared.tour.data.response;
 
+import java.util.Collections;
 import java.util.List;
 
+import org.springframework.util.StringUtils;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
@@ -17,7 +21,6 @@ public class TourResponseDto {
 
 	private long id;
 	private String title;
-	private List<CategoryInfo> categoryList;
 	@Builder.Default
 	private boolean like = false;
 	private PlaceInfo placeInfo;
@@ -31,8 +34,16 @@ public class TourResponseDto {
 		@JsonProperty("id")
 		private String placeId;
 		private String name;
+		private Boolean isDefaultImage;
 		private List<PlaceImageInfo> imageUrlList;
 		private String district;
+
+		public List<PlaceImageInfo> getImageUrlList() {
+			if (Boolean.TRUE.equals(isDefaultImage)) {
+				return Collections.emptyList();
+			}
+			return imageUrlList;
+		}
 	}
 
 	@Data
@@ -45,16 +56,16 @@ public class TourResponseDto {
 		private String firstName;
 		private String lastName;
 		private String profileImageUrl;
+		@JsonIgnore
+		private String optimizedProfileImageUrl;
 		private boolean directMessageStatus;
-	}
 
-	@Data
-	@Builder
-	@NoArgsConstructor
-	@AllArgsConstructor
-	public static class CategoryInfo {
-		@JsonProperty("name")
-		private String categoryName;
+		public String getProfileImageUrl() {
+			if (StringUtils.hasText(optimizedProfileImageUrl)) {
+				return optimizedProfileImageUrl;
+			}
+			return profileImageUrl;
+		}
 	}
 
 	@Data
@@ -64,5 +75,14 @@ public class TourResponseDto {
 	public static class PlaceImageInfo {
 		@JsonProperty("imageUrl")
 		private String placeImageUrl;
+		@JsonIgnore
+		private String optimizedImageUrl;
+
+		public String getPlaceImageUrl() {
+			if (StringUtils.hasText(optimizedImageUrl)) {
+				return optimizedImageUrl;
+			}
+			return placeImageUrl;
+		}
 	}
 }

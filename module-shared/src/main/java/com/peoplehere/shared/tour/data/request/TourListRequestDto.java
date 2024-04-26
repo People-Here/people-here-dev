@@ -1,6 +1,9 @@
 package com.peoplehere.shared.tour.data.request;
 
-import jakarta.validation.constraints.NotBlank;
+import com.peoplehere.shared.common.enums.LangCode;
 
-public record TourListRequestDto(@NotBlank String keyword) {
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+public record TourListRequestDto(@NotNull LangCode langCode, @NotBlank String keyword) {
 }

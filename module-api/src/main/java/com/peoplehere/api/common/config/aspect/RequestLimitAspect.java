@@ -37,7 +37,7 @@ public class RequestLimitAspect {
 	/**
 	 * 이메일 인증 번호 전송에 대한 제한을 체크하는 Aspect
 	 * @param joinPoint
-	 * @return
+	 *
 	 */
 	@Before("@annotation(com.peoplehere.api.common.annotation.CheckEmailVerificationLimit)")
 	public void checkEmailVerificationLimit(JoinPoint joinPoint) {
@@ -49,8 +49,6 @@ public class RequestLimitAspect {
 	/**
 	 * 이메일 인증 번호 검증에 대한 제한을 체크하는 Aspect
 	 * @param joinPoint
-	 * @return
-	 * @throws Throwable
 	 */
 	@Before("@annotation(com.peoplehere.api.common.annotation.CheckEmailVerifyLimit)")
 	public void checkEmailVerifyLimit(JoinPoint joinPoint) {

@@ -16,4 +16,5 @@ public class MessageUtils {
 		int sixDigitNumber = 100_000 + random.nextInt(900_000);
 		return String.valueOf(sixDigitNumber);
 	}
+
 }

@@ -80,9 +80,13 @@ public class AccountService {
 	@Transactional
 	public AccountResponseDto signIn(SignInRequestDto requestDto) {
 		Authentication authentication = attemptAuthentication(requestDto);
+		Account account = accountRepository.findByEmail(authentication.getName())
+			.orElseThrow(() -> new AccountIdNotFoundException(authentication.getName()));
+
 		Token token = tokenProvider.generateToken(authentication);
 		redisTaskService.setRefreshToken(token, authentication.getName());
 		return AccountResponseDto.builder()
+			.id(account.getId())
 			.accessToken(token.accessToken())
 			.refreshToken(token.refreshToken())
 			.build();
@@ -129,7 +133,7 @@ public class AccountService {
 	 * 사용자 계정을 비활성화한다
 	 * 비활성화된 계정은 스케줄러를 돌며 30일 후 삭제된다
 	 * @param accountId
-	 * @return
+	 *
 	 */
 	@Transactional
 	public void deactivateAccount(long accountId) {
