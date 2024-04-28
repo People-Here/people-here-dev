@@ -27,7 +27,7 @@ public enum LangCode {
 	JAPANESE("Japanese", "일본어", "ja"),
 	JAVANESE("Javanese", "자바어", "jv"),
 	KANNADA("Kannada", "칸나다어", "kn"),
-	KOREAN("Korean", "한국어", "ko-KR"),
+	KOREAN("Korean", "한국어", "ko"),
 	MALAYALAM("Malayalam", "말라얄람어", "ml"),
 	MARATHI("Marathi", "마라티어", "mr"),
 	NEPALI("Nepali", "네팔어", "ne"),

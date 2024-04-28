@@ -6,7 +6,12 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.peoplehere.shared.common.data.response.TranslationUsageResponseDto;
+import com.peoplehere.shared.common.enums.LangCode;
+import com.peoplehere.shared.common.service.TranslateService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +20,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @RestController
 public class StatusController {
+
+	private final TranslateService translateService;
 
 	@Value("${server.port}")
 	int port;
@@ -56,5 +63,32 @@ public class StatusController {
 
 		var date = System.currentTimeMillis();
 		return ResponseEntity.ok(date);
+	}
+
+	/**
+	 * 번역 요청 로컬용 테스트
+	 * @param langCode
+	 * @param message
+	 * @return
+	 */
+	@GetMapping("/api/local/translate/{langCode}/{message}")
+	public ResponseEntity<String> translate(@PathVariable LangCode langCode, @PathVariable String message) {
+		log.info("번역 요청: langCode: {}, message: {}", langCode, message);
+
+		try {
+			long start = System.currentTimeMillis();
+			String result = translateService.translate(List.of(message), langCode);
+			log.info("번역 결과: {}, 소요시간: {}ms", result, System.currentTimeMillis() - start);
+			return ResponseEntity.ok(result);
+		} catch (Exception e) {
+			log.error("번역 실패", e);
+			return ResponseEntity.internalServerError().body("번역 실패");
+		}
+	}
+
+	@GetMapping("/api/local/translate/usage")
+	public ResponseEntity<TranslationUsageResponseDto> getTranslateUsage() {
+
+		return ResponseEntity.ok(translateService.getUsage());
 	}
 }
