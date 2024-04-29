@@ -21,6 +21,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ProfileInfoResponseDto {
 	private long id;
+	private String firstName;
+	private String lastName;
 	private String profileImageUrl;
 	@JsonIgnore
 	private String optimizedProfileImageUrl;

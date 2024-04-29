@@ -1,13 +1,16 @@
 package com.peoplehere.api.profile.service;
 
 import static com.peoplehere.shared.common.enums.LangCode.*;
+import static com.peoplehere.shared.profile.data.request.ProfileTranslateRequestDto.*;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.peoplehere.shared.common.entity.Account;
 import com.peoplehere.shared.common.enums.LangCode;
 import com.peoplehere.shared.common.enums.Region;
+import com.peoplehere.shared.common.event.ProfileTranslatedEvent;
 import com.peoplehere.shared.common.repository.AccountRepository;
 import com.peoplehere.shared.common.repository.CustomAccountRepository;
 import com.peoplehere.shared.common.service.FileService;
@@ -31,6 +34,7 @@ public class ProfileService {
 	private final AccountInfoRepository accountInfoRepository;
 	private final FileService fileService;
 	private final AlertWebhook alertWebhook;
+	private final ApplicationEventPublisher eventPublisher;
 
 	/**
 	 * 프로필 정보 조회
@@ -100,6 +104,8 @@ public class ProfileService {
 			}
 
 			accountInfoRepository.save(accountInfo);
+			// 3. 이벤트 발행
+			eventPublisher.publishEvent(new ProfileTranslatedEvent(toTranslateRequestDto(account, accountInfo)));
 		} catch (Exception exception) {
 			log.error("프로필 수정 요청 중 오류 발생 request: [{}]", requestDto, exception);
 			alertWebhook.alertError("프로필 수정 요청 중 오류 발생",

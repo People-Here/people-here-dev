@@ -5,6 +5,7 @@ import org.hibernate.annotations.Comment;
 import com.peoplehere.shared.common.entity.BaseTimeEntity;
 import com.peoplehere.shared.common.enums.LangCode;
 import com.peoplehere.shared.profile.data.request.ProfileInfoRequestDto;
+import com.peoplehere.shared.profile.data.response.ProfileTranslateResponseDto;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -75,5 +76,15 @@ public class AccountInfo extends BaseTimeEntity {
 		this.pet = requestDto.pet();
 		this.school = requestDto.school();
 		this.job = requestDto.job();
+	}
+
+	public void updateInfo(ProfileTranslateResponseDto responseDto) {
+		this.introduce = responseDto.introduce();
+		this.favorite = responseDto.favorite();
+		this.hobby = responseDto.hobby();
+		this.pet = responseDto.pet();
+		this.school = responseDto.school();
+		this.job = responseDto.job();
+		this.langCode = responseDto.langCode();
 	}
 }
