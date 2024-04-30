@@ -29,6 +29,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ErrorControllerAdvice {
 	private final AlertWebhook alertWebhook;
+
+	private static final String BAD_REQUEST_BODY = "잘못된 요청입니다!";
 	private static final String FORBIDDEN_403_BODY = "접근할 수 없어요!";
 	private static final String ERROR_500_BODY = "잠시 후 다시 확인해주세요!";
 
@@ -76,10 +78,9 @@ public class ErrorControllerAdvice {
 	 * @return
 	 */
 	@ExceptionHandler(value = ConstraintViolationException.class)
-	public ResponseEntity<ErrorResponseDto> handleConstraintViolationException(ConstraintViolationException exception) {
-		log.debug("쿼리스트링 예외 핸들링", exception);
-		ErrorResponseDto response = new ErrorResponseDto("쿼리스트링 예외 핸들링: [%s]".formatted(exception.getMessage()));
-		return ResponseEntity.badRequest().body(response);
+	public ResponseEntity<Object> handleConstraintViolationException(ConstraintViolationException exception) {
+		log.error("쿼리스트링 예외 핸들링", exception);
+		return ResponseEntity.badRequest().body(BAD_REQUEST_BODY);
 	}
 
 	/**

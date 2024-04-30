@@ -21,6 +21,7 @@ public class TourResponseDto {
 
 	private long id;
 	private String title;
+	private String description;
 	@Builder.Default
 	private boolean like = false;
 	private PlaceInfo placeInfo;
@@ -55,6 +56,7 @@ public class TourResponseDto {
 		private long accountId;
 		private String firstName;
 		private String lastName;
+		private String introduce;
 		private String profileImageUrl;
 		@JsonIgnore
 		private String optimizedProfileImageUrl;

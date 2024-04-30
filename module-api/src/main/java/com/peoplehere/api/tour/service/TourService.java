@@ -167,4 +167,9 @@ public class TourService {
 			throw new RuntimeException("투어 삭제 중 오류 발생: %s".formatted(tourId), exception);
 		}
 	}
+
+	@Transactional(readOnly = true)
+	public TourResponseDto findTourDetail(long tourId, LangCode langCode) {
+		return customTourRepository.findTourDetail(tourId, langCode).orElse(null);
+	}
 }

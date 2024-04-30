@@ -26,6 +26,7 @@ import com.peoplehere.shared.tour.data.request.TourIdRequestDto;
 import com.peoplehere.shared.tour.data.request.TourListRequestDto;
 import com.peoplehere.shared.tour.data.request.TourUpdateRequestDto;
 import com.peoplehere.shared.tour.data.response.TourListResponseDto;
+import com.peoplehere.shared.tour.data.response.TourResponseDto;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -147,6 +148,23 @@ public class TourController {
 			tourService.deleteTour(requestDto.id());
 			return ResponseEntity.ok().build();
 		} catch (Exception e) {
+			return ResponseEntity.internalServerError().build();
+		}
+	}
+
+	/**
+	 * 장소 상세 조회
+	 * @param tourId 장소 id
+	 * @param langCode 언어 코드
+	 * @return
+	 */
+	@CheckAbusing
+	@GetMapping("/{tourId}/{langCode}")
+	public ResponseEntity<TourResponseDto> getTourDetail(@PathVariable long tourId, @PathVariable LangCode langCode) {
+		try {
+			return ResponseEntity.ok(tourService.findTourDetail(tourId, langCode));
+		} catch (Exception e) {
+			log.error("장소: id: {}, langCode: {} 상세 조회 중 오류 발생", tourId, langCode, e);
 			return ResponseEntity.internalServerError().build();
 		}
 	}

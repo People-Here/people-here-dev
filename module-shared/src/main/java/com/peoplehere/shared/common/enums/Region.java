@@ -90,12 +90,25 @@ public enum Region {
 	}
 
 	/**
+	 * 지도 언어 코드 반환
+	 * 나라가 한국인 경우 한국어 반환
+	 * 그외의 나라의 경우 영어 반환
+	 * @return
+	 */
+	public LangCode getMapLangCode() {
+		if (KR.equals(this)) {
+			return KOREAN;
+		}
+		return ENGLISH;
+	}
+
+	/**
 	 * 나라에 해당하는 언어 코드 반환
 	 * 나라가 한국인 경우 원문 반환
 	 * 그외의 나라의 경우 영어 반환
 	 * @return
 	 */
-	public LangCode getMapLangCode() {
+	public LangCode getLangCode() {
 		if (KR.equals(this)) {
 			return ORIGIN;
 		}

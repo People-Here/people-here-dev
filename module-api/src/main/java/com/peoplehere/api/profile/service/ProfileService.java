@@ -48,7 +48,7 @@ public class ProfileService {
 	public ProfileInfoResponseDto getProfileInfo(Long accountId, Region region) {
 		try {
 
-			LangCode langCode = region.getMapLangCode();
+			LangCode langCode = region.getLangCode();
 			if (ORIGIN.equals(langCode)) {
 				return customAccountRepository.findProfileInfo(accountId, langCode).orElse(null);
 			}
