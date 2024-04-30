@@ -9,7 +9,7 @@ import com.peoplehere.shared.profile.entity.AccountInfo;
 
 public interface AccountInfoRepository extends JpaRepository<AccountInfo, Long> {
 
-	Optional<AccountInfo> findByAccountIdAndLangCode(long accountId, LangCode langCode);
+	Optional<AccountInfo> findByAccountIdAndLangCode(Long accountId, LangCode langCode);
 
-	void deleteByAccountIdAndLangCode(long accountId, LangCode langCode);
+	void deleteByAccountIdAndLangCode(Long accountId, LangCode langCode);
 }

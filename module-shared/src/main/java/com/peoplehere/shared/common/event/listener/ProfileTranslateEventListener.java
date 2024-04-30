@@ -103,7 +103,6 @@ public class ProfileTranslateEventListener {
 
 			accountInfo.updateInfo(getProfileTranslateResponseDto(context, newTranslateTextList));
 			accountInfoRepository.save(accountInfo);
-			throw new TranslateException("테스트 해볼까?", new Exception());
 		} catch (TranslateException translateException) {
 			log.warn("프로필 번역 실패 해당 accountInfo 저장하지 않음 | id: {}, dto: {}, langCode: {}", event.id(),
 				event.requestDto(), supportedLangCode, translateException);

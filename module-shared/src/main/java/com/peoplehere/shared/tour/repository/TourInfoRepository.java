@@ -13,4 +13,6 @@ public interface TourInfoRepository extends JpaRepository<TourInfo, Long> {
 	void deleteAllByTourId(Long tourId);
 
 	Optional<TourInfo> findByTourIdAndLangCode(Long tourId, LangCode langCode);
+
+	void deleteByTourIdAndLangCode(Long tourId, LangCode langCode);
 }

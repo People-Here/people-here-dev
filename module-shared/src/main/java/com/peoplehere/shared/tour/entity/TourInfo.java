@@ -5,6 +5,7 @@ import org.hibernate.annotations.Comment;
 import com.peoplehere.shared.common.entity.BaseTimeEntity;
 import com.peoplehere.shared.common.enums.LangCode;
 import com.peoplehere.shared.tour.data.request.TourUpdateRequestDto;
+import com.peoplehere.shared.tour.data.response.TourInfoTranslateResponseDto;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -56,5 +57,10 @@ public class TourInfo extends BaseTimeEntity {
 	public void updateInfo(TourUpdateRequestDto requestDto) {
 		this.title = requestDto.title();
 		this.description = requestDto.description();
+	}
+
+	public void updateTranslatedInfo(TourInfoTranslateResponseDto responseDto) {
+		this.title = responseDto.title();
+		this.description = responseDto.description();
 	}
 }

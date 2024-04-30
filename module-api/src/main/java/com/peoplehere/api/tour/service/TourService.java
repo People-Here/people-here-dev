@@ -1,16 +1,19 @@
 package com.peoplehere.api.tour.service;
 
 import static com.peoplehere.shared.tour.data.request.TourCreateRequestDto.*;
+import static com.peoplehere.shared.tour.data.request.TourInfoTranslateRequestDto.*;
 import static java.util.stream.Collectors.*;
 
 import java.util.List;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import com.peoplehere.shared.common.entity.Account;
 import com.peoplehere.shared.common.enums.LangCode;
+import com.peoplehere.shared.common.event.TourInfoTranslatedEvent;
 import com.peoplehere.shared.common.repository.AccountRepository;
 import com.peoplehere.shared.common.service.FileService;
 import com.peoplehere.shared.common.webhook.AlertWebhook;
@@ -21,6 +24,7 @@ import com.peoplehere.shared.tour.data.response.TourListResponseDto;
 import com.peoplehere.shared.tour.data.response.TourResponseDto;
 import com.peoplehere.shared.tour.entity.Tour;
 import com.peoplehere.shared.tour.entity.TourImage;
+import com.peoplehere.shared.tour.entity.TourInfo;
 import com.peoplehere.shared.tour.repository.CustomTourRepository;
 import com.peoplehere.shared.tour.repository.TourImageRepository;
 import com.peoplehere.shared.tour.repository.TourInfoRepository;
@@ -42,6 +46,7 @@ public class TourService {
 	private final AccountRepository accountRepository;
 	private final FileService fileService;
 	private final AlertWebhook alertWebhook;
+	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional(readOnly = true)
 	public TourListResponseDto findTourList(LangCode langCode) {
@@ -88,8 +93,10 @@ public class TourService {
 			}
 
 			// 3. 투어 정보 저장
-			tourInfoRepository.save(toTourInfoEntity(requestDto, tour.getId()));
+			TourInfo tourInfo = tourInfoRepository.save(toTourInfoEntity(requestDto, tour.getId()));
 
+			// 4. 이벤트 발행
+			eventPublisher.publishEvent(new TourInfoTranslatedEvent(toTranslateRequestDto(tour, tourInfo)));
 		} catch (Exception exception) {
 			log.error("투어: [{}] 등록 중 오류 발생", requestDto, exception);
 			alertWebhook.alertError("투어 등록 중 오류 발생",
@@ -134,11 +141,11 @@ public class TourService {
 			}
 
 			// 3. 투어 정보 수정
-			tourInfoRepository.findByTourIdAndLangCode(tour.getId(), LangCode.ORIGIN)
-				.ifPresent(tourInfo -> {
-					tourInfo.updateInfo(requestDto);
-				});
+			TourInfo tourInfo = tourInfoRepository.findByTourIdAndLangCode(tour.getId(), LangCode.ORIGIN)
+				.orElseThrow(() -> new EntityNotFoundException("해당 투어[%s]의 정보를 찾을 수 없습니다.".formatted(tour.getId())));
 
+			// 4. 이벤트 발행
+			eventPublisher.publishEvent(new TourInfoTranslatedEvent(toTranslateRequestDto(tour, tourInfo)));
 		} catch (Exception exception) {
 			log.error("투어: [{}] 수정 중 오류 발생", requestDto, exception);
 			alertWebhook.alertError("투어 수정 중 오류 발생",
