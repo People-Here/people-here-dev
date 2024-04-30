@@ -35,7 +35,7 @@ public class CustomCorsFilter implements Filter {
 		".peoplehere.world", "localhost"
 	);
 
-	private static final String ALLOWED_METHODS = "GET, POST, PUT, OPTIONS";
+	private static final String ALLOWED_METHODS = "GET, POST, PUT, OPTIONS, DELETE";
 	private static final String ALLOWED_HEADERS = "X-Requested-With,Origin,Content-Type,Accept,Authorization";
 
 	/**
