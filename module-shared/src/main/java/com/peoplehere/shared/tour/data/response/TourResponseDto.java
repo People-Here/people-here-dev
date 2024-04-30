@@ -7,6 +7,7 @@ import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.peoplehere.shared.common.enums.LangCode;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,6 +25,7 @@ public class TourResponseDto {
 	private String description;
 	@Builder.Default
 	private boolean like = false;
+	private String theme;
 	private PlaceInfo placeInfo;
 	private UserInfo userInfo;
 
@@ -61,6 +63,7 @@ public class TourResponseDto {
 		@JsonIgnore
 		private String optimizedProfileImageUrl;
 		private boolean directMessageStatus;
+		private List<LangCode> languages;
 
 		public String getProfileImageUrl() {
 			if (StringUtils.hasText(optimizedProfileImageUrl)) {

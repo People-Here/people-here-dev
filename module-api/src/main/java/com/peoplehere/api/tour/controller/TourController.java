@@ -28,6 +28,7 @@ import com.peoplehere.shared.tour.data.request.TourUpdateRequestDto;
 import com.peoplehere.shared.tour.data.response.TourListResponseDto;
 import com.peoplehere.shared.tour.data.response.TourResponseDto;
 
+import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -46,9 +47,11 @@ public class TourController {
 	 */
 	@CheckAbusing
 	@GetMapping("/{langCode}")
-	public ResponseEntity<TourListResponseDto> getTourList(@PathVariable LangCode langCode) {
+	public ResponseEntity<TourListResponseDto> getTourList(@PathVariable LangCode langCode,
+		@Nullable Principal principal) {
 		try {
-			return ResponseEntity.ok(tourService.findTourList(langCode));
+			String userId = principal == null ? null : principal.getName();
+			return ResponseEntity.ok(tourService.findTourList(userId, langCode));
 		} catch (Exception e) {
 			log.error("장소 목록 조회 중 오류 발생", e);
 			return ResponseEntity.internalServerError().build();
@@ -58,19 +61,22 @@ public class TourController {
 	/**
 	 * 장소 목록 키워드를 통한 검색
 	 * @param requestDto 검색 키워드
+	 * @param principal 사용자 정보
 	 * @param bindingResult 바인딩 결과
-	 * @return 장소 목록
+	 * @return
 	 * @throws BindException
 	 */
 	@CheckAbusing
 	@PostMapping("/search")
 	public ResponseEntity<TourListResponseDto> getTourList(@RequestBody @Validated TourListRequestDto requestDto,
+		@Nullable Principal principal,
 		BindingResult bindingResult) throws BindException {
 		if (bindingResult.hasErrors()) {
 			throw new BindException(bindingResult);
 		}
 		try {
-			return ResponseEntity.ok(tourService.findTourListByKeyword(requestDto));
+			String userId = principal == null ? null : principal.getName();
+			return ResponseEntity.ok(tourService.findTourListByKeyword(userId, requestDto));
 		} catch (Exception e) {
 			log.error("키워드: {} 를 통한 장소 목록 검색 중 오류 발생", requestDto, e);
 			return ResponseEntity.internalServerError().build();
@@ -160,13 +166,54 @@ public class TourController {
 	 */
 	@CheckAbusing
 	@GetMapping("/{tourId}/{langCode}")
-	public ResponseEntity<TourResponseDto> getTourDetail(@PathVariable long tourId, @PathVariable LangCode langCode) {
+	public ResponseEntity<TourResponseDto> getTourDetail(@PathVariable long tourId, @PathVariable LangCode langCode,
+		@Nullable Principal principal) {
 		try {
-			return ResponseEntity.ok(tourService.findTourDetail(tourId, langCode));
+			String userId = principal == null ? null : principal.getName();
+			return ResponseEntity.ok(tourService.findTourDetail(tourId, userId, langCode));
 		} catch (Exception e) {
 			log.error("장소: id: {}, langCode: {} 상세 조회 중 오류 발생", tourId, langCode, e);
 			return ResponseEntity.internalServerError().build();
 		}
 	}
 
+	/**
+	 * 유저가 좋아요 누른 장소 목록 조회
+	 * @param langCode 언어 코드
+	 * @return
+	 */
+	@CheckAbusing
+	@UpdateTourAuthorize
+	@GetMapping("/like/{langCode}")
+	public ResponseEntity<TourListResponseDto> getLikeTourList(@PathVariable LangCode langCode, Principal principal) {
+		try {
+			String userId = principal.getName();
+			return ResponseEntity.ok(tourService.findLikeTourList(userId, langCode));
+		} catch (Exception e) {
+			log.error("유저: userId: {}, langCode: {} 좋아요 누른 장소 목록 조회 중 오류 발생", principal.getName(), langCode, e);
+			return ResponseEntity.internalServerError().build();
+		}
+	}
+
+	/**
+	 * 투어에 좋아요 누르기
+	 * @return
+	 */
+	@CheckAbusing
+	@UpdateTourAuthorize
+	@PostMapping("/like")
+	public ResponseEntity<Void> likeTour(@RequestBody @Validated TourIdRequestDto requestDto, Principal principal,
+		BindingResult bindingResult) throws BindException {
+		if (bindingResult.hasErrors()) {
+			throw new BindException(bindingResult);
+		}
+
+		try {
+			tourService.likeTour(requestDto.id(), principal.getName());
+			return ResponseEntity.ok().build();
+		} catch (Exception e) {
+			log.error("투어 좋아요 누르기 id: {} userId: {} 중 오류 발생", requestDto.id(), principal.getName(), e);
+			return ResponseEntity.internalServerError().build();
+		}
+	}
 }

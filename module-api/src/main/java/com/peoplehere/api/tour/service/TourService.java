@@ -25,9 +25,11 @@ import com.peoplehere.shared.tour.data.response.TourResponseDto;
 import com.peoplehere.shared.tour.entity.Tour;
 import com.peoplehere.shared.tour.entity.TourImage;
 import com.peoplehere.shared.tour.entity.TourInfo;
+import com.peoplehere.shared.tour.entity.TourLike;
 import com.peoplehere.shared.tour.repository.CustomTourRepository;
 import com.peoplehere.shared.tour.repository.TourImageRepository;
 import com.peoplehere.shared.tour.repository.TourInfoRepository;
+import com.peoplehere.shared.tour.repository.TourLikeRepository;
 import com.peoplehere.shared.tour.repository.TourRepository;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -42,6 +44,7 @@ public class TourService {
 	private final TourRepository tourRepository;
 	private final TourImageRepository tourImageRepository;
 	private final TourInfoRepository tourInfoRepository;
+	private final TourLikeRepository tourLikeRepository;
 	private final CustomTourRepository customTourRepository;
 	private final AccountRepository accountRepository;
 	private final FileService fileService;
@@ -49,14 +52,16 @@ public class TourService {
 	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional(readOnly = true)
-	public TourListResponseDto findTourList(LangCode langCode) {
-		List<TourResponseDto> dtoList = customTourRepository.findTourListByLangCode(langCode);
+	public TourListResponseDto findTourList(String userId, LangCode langCode) {
+		Long accountId = accountRepository.findByUserId(userId).map(Account::getId).orElse(null);
+		List<TourResponseDto> dtoList = customTourRepository.findTourListByLangCode(accountId, langCode);
 		return TourListResponseDto.builder().tourList(dtoList).build();
 	}
 
 	@Transactional(readOnly = true)
-	public TourListResponseDto findTourListByKeyword(TourListRequestDto requestDto) {
-		List<TourResponseDto> dtoList = customTourRepository.findTourListByKeyword(requestDto);
+	public TourListResponseDto findTourListByKeyword(String userId, TourListRequestDto requestDto) {
+		Long accountId = accountRepository.findByUserId(userId).map(Account::getId).orElse(null);
+		List<TourResponseDto> dtoList = customTourRepository.findTourListByKeyword(accountId, requestDto);
 		return TourListResponseDto.builder().tourList(dtoList).build();
 	}
 
@@ -70,11 +75,12 @@ public class TourService {
 	public void createTour(String userId, TourCreateRequestDto requestDto) {
 		try {
 			// 1. 유저 조회 후 투어 등록
-			Account account = accountRepository.findByUserId(userId)
+			long accountId = accountRepository.findByUserId(userId)
+				.map(Account::getId)
 				.orElseThrow(() -> new EntityNotFoundException("해당 유저[%s]를 찾을 수 없습니다.".formatted(userId)));
 
 			boolean isDefaultImage = CollectionUtils.isEmpty(requestDto.images());
-			Tour tour = tourRepository.save(toTourEntity(requestDto, account.getId(), isDefaultImage));
+			Tour tour = tourRepository.save(toTourEntity(requestDto, accountId, isDefaultImage));
 
 			// 2. 이미지 업로드 및 투어 이미지 저장
 			if (!isDefaultImage) {
@@ -160,6 +166,7 @@ public class TourService {
 			tourRepository.deleteById(tourId);
 			tourInfoRepository.deleteAllByTourId(tourId);
 			tourImageRepository.deleteAllByTourId(tourId);
+			tourLikeRepository.deleteAllByTourId(tourId);
 		} catch (Exception exception) {
 			log.error("투어 ID: [{}] 삭제 중 오류 발생", tourId, exception);
 			alertWebhook.alertError("투어 삭제 중 오류 발생",
@@ -169,7 +176,44 @@ public class TourService {
 	}
 
 	@Transactional(readOnly = true)
-	public TourResponseDto findTourDetail(long tourId, LangCode langCode) {
-		return customTourRepository.findTourDetail(tourId, langCode).orElse(null);
+	public TourResponseDto findTourDetail(long tourId, String userId, LangCode langCode) {
+		Long accountId = accountRepository.findByUserId(userId).map(Account::getId).orElse(null);
+		return customTourRepository.findTourDetail(tourId, accountId, langCode).orElse(null);
+	}
+
+	/**
+	 * 유저가 좋아요 누른 투어 목록 조회
+	 * @param userId 유저 id
+	 * @param langCode 언어 코드
+	 * @return 투어 목록
+	 */
+	@Transactional(readOnly = true)
+	public TourListResponseDto findLikeTourList(String userId, LangCode langCode) {
+		long accountId = accountRepository.findByUserId(userId)
+			.map(Account::getId)
+			.orElseThrow(() -> new EntityNotFoundException("해당 유저[%s]를 찾을 수 없습니다.".formatted(userId)));
+		List<TourResponseDto> dtoList = customTourRepository.findLikeTourList(accountId, langCode);
+		return TourListResponseDto.builder().tourList(dtoList).build();
+	}
+
+	/**
+	 * 투어 좋아요 토글
+	 * @param tourId 투어 id
+	 * @param userId 유저 id
+	 */
+	@Transactional
+	public void likeTour(long tourId, String userId) {
+		long accountId = accountRepository.findByUserId(userId)
+			.map(Account::getId)
+			.orElseThrow(() -> new EntityNotFoundException("해당 유저[%s]를 찾을 수 없습니다.".formatted(userId)));
+
+		TourLike tourLike = tourLikeRepository.findByTourIdAndAccountId(tourId, accountId)
+			.orElse(TourLike.builder()
+				.tourId(tourId)
+				.accountId(accountId)
+				.build());
+
+		tourLike.toggleLike();
+		tourLikeRepository.save(tourLike);
 	}
 }

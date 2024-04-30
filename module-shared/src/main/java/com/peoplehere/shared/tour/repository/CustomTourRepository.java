@@ -6,6 +6,7 @@ import static com.peoplehere.shared.tour.entity.QPlace.*;
 import static com.peoplehere.shared.tour.entity.QTour.*;
 import static com.peoplehere.shared.tour.entity.QTourImage.*;
 import static com.peoplehere.shared.tour.entity.QTourInfo.*;
+import static com.peoplehere.shared.tour.entity.QTourLike.*;
 import static com.querydsl.core.group.GroupBy.*;
 
 import java.util.List;
@@ -21,6 +22,7 @@ import com.querydsl.core.group.GroupBy;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.QBean;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
@@ -34,37 +36,48 @@ public class CustomTourRepository {
 
 	private final JPAQueryFactory queryFactory;
 
-	public List<TourResponseDto> findTourListByLangCode(LangCode langCode) {
+	public List<TourResponseDto> findTourListByLangCode(Long accountId, LangCode langCode) {
 		BooleanExpression langCodeCondition = (tourInfo.langCode.eq(langCode).and(accountInfo.langCode.eq(langCode)));
 
-		return findTourWithJoinData()
+		return findTourWithJoinData(accountId)
 			.where(langCodeCondition)
-			.transform(groupBy(tour.id).list(tourResponseDtoQBean()));
+			.transform(groupBy(tour.id).list(tourResponseDtoQBean(accountId)));
 	}
 
-	public List<TourResponseDto> findTourListByKeyword(TourListRequestDto requestDto) {
+	public List<TourResponseDto> findTourListByKeyword(Long accountId, TourListRequestDto requestDto) {
 		BooleanExpression langCodeCondition = (tourInfo.langCode.eq(requestDto.langCode())
 			.and(accountInfo.langCode.eq(requestDto.langCode())));
 		BooleanExpression searchCondition = ((place.name.contains(requestDto.keyword())).or(
 			place.address.contains(requestDto.keyword())));
 
-		return findTourWithJoinData()
+		return findTourWithJoinData(accountId)
 			.where(langCodeCondition.and(searchCondition))
-			.transform(groupBy(tour.id).list(tourResponseDtoQBean()));
+			.transform(groupBy(tour.id).list(tourResponseDtoQBean(accountId)));
 	}
 
-	public Optional<TourResponseDto> findTourDetail(long tourId, LangCode langCode) {
+	public Optional<TourResponseDto> findTourDetail(long tourId, Long accountId, LangCode langCode) {
 		BooleanExpression langCodeCondition = (tourInfo.langCode.eq(langCode)
 			.and(accountInfo.langCode.eq(langCode)));
 
-		return findTourWithJoinData()
+		return findTourWithJoinData(accountId)
 			.where((tour.id.eq(tourId)).and(langCodeCondition))
-			.transform(groupBy(tour.id).list(tourResponseDtoQBean()))
+			.transform(groupBy(tour.id).list(tourResponseDtoQBean(accountId)))
 			.stream()
 			.findFirst();
 	}
 
-	private JPAQuery<Tour> findTourWithJoinData() {
+	public List<TourResponseDto> findLikeTourList(Long accountId, LangCode langCode) {
+		BooleanExpression langCodeCondition = (tourInfo.langCode.eq(langCode).and(accountInfo.langCode.eq(langCode)));
+		BooleanExpression likeCondition = tourLike.isLike.eq(true);
+
+		return findTourWithJoinData(accountId)
+			.where(langCodeCondition.and(likeCondition))
+			.transform(groupBy(tour.id).list(tourResponseDtoQBean(accountId)));
+	}
+
+	private JPAQuery<Tour> findTourWithJoinData(Long accountId) {
+		BooleanExpression likeCondition = accountId != null ? tourLike.accountId.eq(accountId) : Expressions.TRUE;
+
 		return queryFactory.select(tour)
 			.from(tour)
 			.leftJoin(tourInfo).on(tour.id.eq(tourInfo.tourId))
@@ -72,16 +85,23 @@ public class CustomTourRepository {
 			.leftJoin(accountInfo).on(account.id.eq(accountInfo.accountId))
 			.leftJoin(place).on(tour.placeId.eq(place.placeId))
 			.leftJoin(tourImage).on(tour.id.eq(tourImage.tourId))
+			.leftJoin(tourLike).on(tour.id.eq(tourLike.tourId).and(likeCondition))
 			.orderBy(tour.id.desc())
 			.distinct();
 	}
 
-	private QBean<TourResponseDto> tourResponseDtoQBean() {
+	private QBean<TourResponseDto> tourResponseDtoQBean(Long accountId) {
+		BooleanExpression likeExpression = Optional.ofNullable(accountId)
+			.map(id -> tourLike.accountId.eq(id).and(tourLike.isLike))
+			.orElse(Expressions.FALSE);
+
 		return Projections.bean(
 			TourResponseDto.class,
 			tour.id.as("id"),
 			tourInfo.title.as("title"),
 			tourInfo.description.as("description"),
+			likeExpression.as("like"),
+			tour.theme.as("theme"),
 			Projections.bean(
 				TourResponseDto.PlaceInfo.class,
 				place.placeId.as("placeId"),
@@ -102,7 +122,8 @@ public class CustomTourRepository {
 				accountInfo.introduce.as("introduce"),
 				account.profileImageUrl.as("profileImageUrl"),
 				account.optimizedProfileImageUrl.as("optimizedProfileImageUrl"),
-				account.directMessageStatus.as("directMessageStatus")
+				account.directMessageStatus.as("directMessageStatus"),
+				account.langCodeList.as("languages")
 			).as("userInfo")
 		);
 	}
