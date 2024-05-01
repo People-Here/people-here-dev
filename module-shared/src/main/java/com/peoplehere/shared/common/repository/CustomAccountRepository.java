@@ -3,6 +3,7 @@ package com.peoplehere.shared.common.repository;
 import static com.peoplehere.shared.common.entity.QAccount.*;
 import static com.peoplehere.shared.profile.entity.QAccountInfo.*;
 import static com.peoplehere.shared.tour.entity.QPlace.*;
+import static com.peoplehere.shared.tour.entity.QPlaceInfo.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Repository;
 
 import com.peoplehere.shared.common.enums.LangCode;
+import com.peoplehere.shared.common.enums.Region;
 import com.peoplehere.shared.profile.data.response.ProfileInfoResponseDto;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
@@ -26,7 +28,7 @@ public class CustomAccountRepository {
 
 	private final JPAQueryFactory queryFactory;
 
-	public Optional<ProfileInfoResponseDto> findProfileInfo(Long accountId, LangCode langCode) {
+	public Optional<ProfileInfoResponseDto> findProfileInfo(Long accountId, Region region, LangCode langCode) {
 		return Optional.ofNullable(queryFactory
 			.select(Projections.bean(ProfileInfoResponseDto.class,
 				account.id.as("id"),
@@ -42,13 +44,16 @@ public class CustomAccountRepository {
 				accountInfo.introduce.as("introduce"),
 				accountInfo.job.as("job"),
 				accountInfo.school.as("school"),
-				place.address.as("address"),
+				placeInfo.address.as("address"),
 				account.birthDate.as("birthDate"),
 				Expressions.asEnum(langCode).as("langCode")))
 			.from(account)
 			.leftJoin(accountInfo).on(account.id.eq(accountInfo.accountId))
 			.leftJoin(place).on(account.placeId.eq(place.placeId))
-			.where(account.id.eq(accountId).and(accountInfo.langCode.eq(langCode)))
+			.leftJoin(placeInfo).on(place.placeId.eq(placeInfo.placeId)
+				.and(placeInfo.langCode.eq(region.getMapLangCode()).or(placeInfo.langCode.isNull())))
+			.where(account.id.eq(accountId)
+				.and(accountInfo.langCode.eq(langCode)))
 			.fetchOne());
 	}
 

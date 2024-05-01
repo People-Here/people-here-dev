@@ -50,10 +50,10 @@ public class ProfileService {
 
 			LangCode langCode = region.getLangCode();
 			if (ORIGIN.equals(langCode)) {
-				return customAccountRepository.findProfileInfo(accountId, langCode).orElse(null);
+				return customAccountRepository.findProfileInfo(accountId, region, langCode).orElse(null);
 			}
-			return customAccountRepository.findProfileInfo(accountId, langCode).orElseGet(
-				() -> customAccountRepository.findProfileInfo(accountId, ORIGIN).orElse(null));
+			return customAccountRepository.findProfileInfo(accountId, region, langCode).orElseGet(
+				() -> customAccountRepository.findProfileInfo(accountId, region, ORIGIN).orElse(null));
 
 		} catch (Exception exception) {
 			log.error("프로필 정보 조회 중 오류 발생 accountId: [{}], region: [{}]", accountId, region, exception);

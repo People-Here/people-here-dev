@@ -2,19 +2,30 @@ package com.peoplehere.api.tour.service;
 
 import java.time.Duration;
 import java.util.LinkedHashSet;
+import java.util.NoSuchElementException;
+import java.util.Objects;
 
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.peoplehere.api.common.exception.HttpRequestRetryException;
 import com.peoplehere.api.common.service.RedisTaskService;
 import com.peoplehere.api.tour.config.GoogleMapProperties;
+import com.peoplehere.shared.common.enums.LangCode;
 import com.peoplehere.shared.common.enums.Region;
 import com.peoplehere.shared.common.webhook.AlertWebhook;
+import com.peoplehere.shared.tour.data.request.PlaceInfoRequestDto;
+import com.peoplehere.shared.tour.data.response.PlaceDetailResponseDto;
 import com.peoplehere.shared.tour.data.response.PlaceInfoListResponseDto;
+import com.peoplehere.shared.tour.data.response.PlaceInfoResponseDto;
+import com.peoplehere.shared.tour.entity.Place;
+import com.peoplehere.shared.tour.entity.PlaceInfo;
+import com.peoplehere.shared.tour.repository.PlaceInfoRepository;
+import com.peoplehere.shared.tour.repository.PlaceRepository;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +45,15 @@ public class GoogleMapServiceImpl implements MapService {
 	private WebClient webClient;
 	private final AlertWebhook alertWebhook;
 	private final GoogleMapProperties googleMapProperties;
+	private final PlaceRepository placeRepository;
+	private final PlaceInfoRepository placeInfoRepository;
 	private final RedisTaskService redisTaskService;
+	private static final String PLACE_DETAIL_FIELDS =
+		"name,"
+			+ "place_id,"
+			+ "geometry/location,"
+			+ "formatted_address,"
+			+ "address_components";
 
 	@PostConstruct
 	void init() {
@@ -88,5 +107,98 @@ public class GoogleMapServiceImpl implements MapService {
 			.timeout(Duration.ofSeconds(10))
 			.block();
 	}
+
+	/**
+	 * 장소Id로 장소 상세 정보를 조회한 후 저장
+	 * @param requestDto 장소 상세 정보
+	 * @return
+	 */
+	@Override
+	@Transactional
+	public PlaceInfoResponseDto addPlaceDetailInfo(PlaceInfoRequestDto requestDto) throws NoSuchElementException {
+		LangCode langCode = requestDto.region().getMapLangCode();
+		try {
+			PlaceDetailResponseDto responseDto = webClient.get()
+				.uri(uriBuilder -> uriBuilder
+					.path("/place/details/json")
+					.queryParam("place_id", requestDto.placeId())
+					.queryParam("fields", PLACE_DETAIL_FIELDS)
+					.queryParam("key", googleMapProperties.getKey())
+					.queryParam("language", langCode.getCode())
+					.build())
+				.retrieve()
+				.onStatus(status -> !status.is2xxSuccessful(),
+					response -> Mono.error(new RuntimeException("Failed to fetch place details")))
+				.bodyToMono(PlaceDetailResponseDto.class)
+				.retryWhen(Retry.fixedDelay(1, Duration.ofSeconds(1)))
+				.block();
+
+			Place place = convertPlaceEntity(Objects.requireNonNull(responseDto));
+			PlaceInfo placeInfo = convertPlaceInfoEntity(Objects.requireNonNull(responseDto), langCode);
+
+			return PlaceInfoResponseDto.builder()
+				.placeId(place.getPlaceId())
+				.name(placeInfo.getName())
+				.address(placeInfo.getAddress())
+				.build();
+
+		} catch (Exception exception) {
+			log.error("장소 id: {}, region: {} 상세 정보 추가 중 오류 발생", requestDto.placeId(), requestDto.region(), exception);
+			alertWebhook.alertError("Google Place 장소 상세 정보 조회 실패",
+				"placeId: %s, langCode: %s, 에러메시지: %s".formatted(requestDto.placeId(), langCode,
+					exception.getMessage()));
+			throw new NoSuchElementException("장소 상세 정보 조회 실패", exception);
+		}
+	}
+
+	private Place convertPlaceEntity(PlaceDetailResponseDto responseDto) {
+		String placeId = responseDto.getPlaceDetails().getPlaceId();
+
+		return placeRepository.findByPlaceId(placeId).orElseGet(() -> {
+			Place newPlace = Place.builder()
+				.placeId(placeId)
+				.latitude(responseDto.getPlaceDetails().getGeometry().getLocation().getLat())
+				.longitude(responseDto.getPlaceDetails().getGeometry().getLocation().getLng())
+				.build();
+			return placeRepository.save(newPlace);
+		});
+	}
+
+	private PlaceInfo convertPlaceInfoEntity(PlaceDetailResponseDto responseDto, LangCode langCode) {
+		PlaceDetailResponseDto.PlaceDetails details = responseDto.getPlaceDetails();
+		String placeId = details.getPlaceId();
+
+		return placeInfoRepository.findByPlaceIdAndLangCode(placeId, langCode).orElseGet(() -> {
+			PlaceInfo newPlaceInfo = PlaceInfo.builder()
+				.placeId(placeId)
+				.langCode(langCode)
+				.name(details.getName())
+				.address(details.getFormattedAddress())
+				.country(details.getAddressComponents().stream()
+					.filter(c -> c.getTypes().contains("country") && c.getTypes().contains("political"))
+					.findFirst()
+					.map(PlaceDetailResponseDto.AddressComponent::getLongName)
+					.orElse(null))
+				.city(details.getAddressComponents().stream()
+					.filter(
+						c -> c.getTypes().contains("administrative_area_level_1"))
+					.findFirst()
+					.map(PlaceDetailResponseDto.AddressComponent::getLongName)
+					.orElse(null))
+				.district(details.getAddressComponents().stream()
+					.filter(c -> c.getTypes().contains("sublocality_level_1") && c.getTypes().contains("sublocality"))
+					.findFirst()
+					.map(PlaceDetailResponseDto.AddressComponent::getLongName)
+					.orElse(null))
+				.streetAddress(details.getAddressComponents().stream()
+					.filter(c -> c.getTypes().contains("route"))
+					.findFirst()
+					.map(PlaceDetailResponseDto.AddressComponent::getLongName)
+					.orElse(null))
+				.build();
+			return placeInfoRepository.save(newPlaceInfo);
+		});
+	}
+
 }
 

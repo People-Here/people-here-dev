@@ -1,7 +1,9 @@
 package com.peoplehere.api.tour.service;
 
 import com.peoplehere.shared.common.enums.Region;
+import com.peoplehere.shared.tour.data.request.PlaceInfoRequestDto;
 import com.peoplehere.shared.tour.data.response.PlaceInfoListResponseDto;
+import com.peoplehere.shared.tour.data.response.PlaceInfoResponseDto;
 
 /**
  * 장소 관련 서비스
@@ -15,4 +17,11 @@ public interface MapService {
 	 * @return
 	 */
 	PlaceInfoListResponseDto getPlaceInfoList(String name, Region region);
+
+	/**
+	 * 장소 상세 정보 추가
+	 * @param requestDto 장소id, 언어코드
+	 */
+	PlaceInfoResponseDto addPlaceDetailInfo(PlaceInfoRequestDto requestDto);
+
 }

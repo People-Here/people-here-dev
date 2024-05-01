@@ -13,6 +13,7 @@ import org.springframework.util.CollectionUtils;
 
 import com.peoplehere.shared.common.entity.Account;
 import com.peoplehere.shared.common.enums.LangCode;
+import com.peoplehere.shared.common.enums.Region;
 import com.peoplehere.shared.common.event.TourInfoTranslatedEvent;
 import com.peoplehere.shared.common.repository.AccountRepository;
 import com.peoplehere.shared.common.service.FileService;
@@ -52,9 +53,9 @@ public class TourService {
 	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional(readOnly = true)
-	public TourListResponseDto findTourList(String userId, LangCode langCode) {
+	public TourListResponseDto findTourList(String userId, Region region, LangCode langCode) {
 		Long accountId = accountRepository.findByUserId(userId).map(Account::getId).orElse(null);
-		List<TourResponseDto> dtoList = customTourRepository.findTourListByLangCode(accountId, langCode);
+		List<TourResponseDto> dtoList = customTourRepository.findTourList(accountId, region, langCode);
 		return TourListResponseDto.builder().tourList(dtoList).build();
 	}
 
@@ -176,9 +177,9 @@ public class TourService {
 	}
 
 	@Transactional(readOnly = true)
-	public TourResponseDto findTourDetail(long tourId, String userId, LangCode langCode) {
+	public TourResponseDto findTourDetail(long tourId, String userId, Region region, LangCode langCode) {
 		Long accountId = accountRepository.findByUserId(userId).map(Account::getId).orElse(null);
-		return customTourRepository.findTourDetail(tourId, accountId, langCode).orElse(null);
+		return customTourRepository.findTourDetail(tourId, accountId, region, langCode).orElse(null);
 	}
 
 	/**
@@ -188,11 +189,11 @@ public class TourService {
 	 * @return 투어 목록
 	 */
 	@Transactional(readOnly = true)
-	public TourListResponseDto findLikeTourList(String userId, LangCode langCode) {
+	public TourListResponseDto findLikeTourList(String userId, Region region, LangCode langCode) {
 		long accountId = accountRepository.findByUserId(userId)
 			.map(Account::getId)
 			.orElseThrow(() -> new EntityNotFoundException("해당 유저[%s]를 찾을 수 없습니다.".formatted(userId)));
-		List<TourResponseDto> dtoList = customTourRepository.findLikeTourList(accountId, langCode);
+		List<TourResponseDto> dtoList = customTourRepository.findLikeTourList(accountId, region, langCode);
 		return TourListResponseDto.builder().tourList(dtoList).build();
 	}
 
