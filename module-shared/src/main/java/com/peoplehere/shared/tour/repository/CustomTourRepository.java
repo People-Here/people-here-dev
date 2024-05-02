@@ -79,6 +79,17 @@ public class CustomTourRepository {
 			.transform(groupBy(tour.id).list(tourResponseDtoQBean(accountId)));
 	}
 
+	public List<TourResponseDto> findTourListByAccount(Long requesterId, long targetAccountId, Region region,
+		LangCode langCode) {
+		BooleanExpression langCodeCondition = tourInfo.langCode.eq(langCode)
+			.and(accountInfo.langCode.eq(langCode));
+		BooleanExpression targetAccountCondition = tour.accountId.eq(targetAccountId);
+
+		return findTourWithJoinData(requesterId, region)
+			.where(langCodeCondition.and(targetAccountCondition))
+			.transform(groupBy(tour.id).list(tourResponseDtoQBean(requesterId)));
+	}
+
 	private JPAQuery<Tour> findTourWithJoinData(Long accountId, Region region) {
 		BooleanExpression likeCondition = accountId != null ? tourLike.accountId.eq(accountId) : Expressions.TRUE;
 

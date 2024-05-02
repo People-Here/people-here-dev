@@ -30,6 +30,7 @@ import com.peoplehere.shared.tour.data.response.TourListResponseDto;
 import com.peoplehere.shared.tour.data.response.TourResponseDto;
 
 import jakarta.annotation.Nullable;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -196,6 +197,29 @@ public class TourController {
 			return ResponseEntity.ok(tourService.findLikeTourList(userId, region, langCode));
 		} catch (Exception e) {
 			log.error("유저: userId: {}, region: {} langCode: {} 좋아요 누른 장소 목록 조회 중 오류 발생", principal.getName(), region,
+				langCode, e);
+			return ResponseEntity.internalServerError().build();
+		}
+	}
+
+	/**
+	 * 해당 유저가 만든 장소 목록 조회
+	 * @param region 지역
+	 * @param langCode 언어 코드
+	 * @return
+	 */
+	@CheckAbusing
+	@GetMapping("/{region}/{langCode}/account/{accountId}")
+	public ResponseEntity<TourListResponseDto> getTourListByAccount(@PathVariable Region region,
+		@PathVariable LangCode langCode, @PathVariable long accountId, @Nullable Principal principal) {
+		try {
+			String requesterName = principal == null ? null : principal.getName();
+			return ResponseEntity.ok(tourService.findTourListByAccount(requesterName, accountId, region, langCode));
+		} catch (EntityNotFoundException entityNotFoundException) {
+			log.error("해당 유저: accountId: {}, region: {} langCode: {} 를 찾을 수 없습니다.", accountId, region, langCode);
+			return ResponseEntity.notFound().build();
+		} catch (Exception e) {
+			log.error("유저: accountId: {}, region: {} langCode: {} 좋아요 누른 장소 목록 조회 중 오류 발생", accountId, region,
 				langCode, e);
 			return ResponseEntity.internalServerError().build();
 		}

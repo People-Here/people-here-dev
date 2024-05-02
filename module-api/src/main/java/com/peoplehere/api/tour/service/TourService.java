@@ -198,6 +198,28 @@ public class TourService {
 	}
 
 	/**
+	 * 유저가 만든 투어 목록 조회
+	 * @param requesterName 요청자 이름
+	 * @param targetAccountId 대상 유저 id
+	 * @param region 지역
+	 * @param langCode 언어 코드
+	 * @return 투어 목록
+	 */
+	@Transactional(readOnly = true)
+	public TourListResponseDto findTourListByAccount(String requesterName, long targetAccountId, Region region,
+		LangCode langCode) throws
+		EntityNotFoundException {
+		Long requesterId = accountRepository.findByUserId(requesterName).map(Account::getId).orElse(null);
+
+		if (!accountRepository.existsById(targetAccountId)) {
+			throw new EntityNotFoundException("해당 유저[%s]를 찾을 수 없습니다.".formatted(targetAccountId));
+		}
+		List<TourResponseDto> dtoList = customTourRepository.findTourListByAccount(requesterId, targetAccountId, region,
+			langCode);
+		return TourListResponseDto.builder().tourList(dtoList).build();
+	}
+
+	/**
 	 * 투어 좋아요 토글
 	 * @param tourId 투어 id
 	 * @param userId 유저 id
