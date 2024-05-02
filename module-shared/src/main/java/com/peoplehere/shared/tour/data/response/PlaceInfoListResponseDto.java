@@ -3,8 +3,10 @@ package com.peoplehere.shared.tour.data.response;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public record PlaceInfoListResponseDto(List<Prediction> predictions, String status) {
 
 	public record Prediction(

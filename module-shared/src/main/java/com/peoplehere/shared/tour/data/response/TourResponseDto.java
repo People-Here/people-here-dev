@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.peoplehere.shared.common.enums.LangCode;
 
@@ -18,6 +19,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class TourResponseDto {
 
 	private long id;
@@ -33,6 +35,7 @@ public class TourResponseDto {
 	@Builder
 	@NoArgsConstructor
 	@AllArgsConstructor
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public static class PlaceInfo {
 		@JsonProperty("id")
 		private String placeId;
@@ -53,6 +56,7 @@ public class TourResponseDto {
 	@Builder
 	@NoArgsConstructor
 	@AllArgsConstructor
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public static class UserInfo {
 		@JsonProperty("id")
 		private long accountId;
@@ -77,6 +81,7 @@ public class TourResponseDto {
 	@Builder
 	@NoArgsConstructor
 	@AllArgsConstructor
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public static class PlaceImageInfo {
 		@JsonProperty("imageUrl")
 		private String placeImageUrl;

@@ -2,6 +2,8 @@ package com.peoplehere.shared.common.entity;
 
 import org.hibernate.annotations.Comment;
 
+import com.peoplehere.shared.common.enums.Alarm;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -39,8 +41,20 @@ public class Consent extends BaseTimeEntity {
 	@Column(name = "marketing_consent")
 	private Boolean marketingConsent;
 
-	@Comment("알람 수신 동의")
-	@Column(name = "alarm_consent")
-	private Boolean alarmConsent;
+	@Comment("쪽지 알람 수신 동의")
+	@Column(name = "message_alarm_consent")
+	private Boolean messageAlarmConsent;
+
+	@Comment("약속 알람 수신 동의")
+	@Column(name = "meeting_alarm_consent")
+	private Boolean meetingAlarmConsent;
+
+	public void setAlarmConsent(Alarm alarm, Boolean consent) {
+		switch (alarm) {
+			case MARKETING -> this.marketingConsent = consent;
+			case MESSAGE -> this.messageAlarmConsent = consent;
+			case MEETING -> this.meetingAlarmConsent = consent;
+		}
+	}
 
 }

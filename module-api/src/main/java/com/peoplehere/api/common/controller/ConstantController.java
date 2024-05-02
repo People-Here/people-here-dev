@@ -1,5 +1,6 @@
 package com.peoplehere.api.common.controller;
 
+import static com.peoplehere.shared.common.enums.Alarm.*;
 import static com.peoplehere.shared.common.enums.LangCode.*;
 import static com.peoplehere.shared.common.enums.Region.*;
 
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.peoplehere.shared.common.data.response.AlarmResponseDto;
 import com.peoplehere.shared.common.data.response.LanguageResponseDto;
 import com.peoplehere.shared.common.data.response.RegionResponseDto;
 import com.peoplehere.shared.common.enums.Gender;
@@ -35,6 +37,15 @@ public class ConstantController {
 	@GetMapping("/langs")
 	public ResponseEntity<List<LanguageResponseDto>> getLanguages() {
 		return ResponseEntity.ok(LANGUAGE_INFO_LIST);
+	}
+
+	/**
+	 * 알람 타입을 반환
+	 * @return
+	 */
+	@GetMapping("/alarms")
+	public ResponseEntity<List<AlarmResponseDto>> getAlarms() {
+		return ResponseEntity.ok(ALARM_INFO_LIST);
 	}
 }
 

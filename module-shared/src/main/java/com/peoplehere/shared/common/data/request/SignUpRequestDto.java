@@ -46,6 +46,7 @@ public class SignUpRequestDto {
 	private boolean marketingConsent;
 
 	private boolean privacyConsent;
+	private boolean alarmConsent;
 
 	public static Account toClientAccount(SignUpRequestDto requestDto, String encodedPassword) {
 		return Account.builder()
@@ -64,10 +65,13 @@ public class SignUpRequestDto {
 	}
 
 	public static Consent toConsent(SignUpRequestDto requestDto, Account account) {
+
 		return Consent.builder()
 			.accountId(account.getId())
 			.privacyConsent(requestDto.isPrivacyConsent())
 			.marketingConsent(requestDto.isMarketingConsent())
+			.messageAlarmConsent(requestDto.isAlarmConsent())
+			.meetingAlarmConsent(requestDto.isAlarmConsent())
 			.build();
 	}
 }

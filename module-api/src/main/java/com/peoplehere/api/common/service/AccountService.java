@@ -17,6 +17,7 @@ import com.peoplehere.api.common.config.security.Token;
 import com.peoplehere.api.common.config.security.TokenProvider;
 import com.peoplehere.api.common.exception.AccountIdNotFoundException;
 import com.peoplehere.api.common.exception.DuplicateException;
+import com.peoplehere.shared.common.data.request.AlarmConsentRequestDto;
 import com.peoplehere.shared.common.data.request.PasswordRequestDto;
 import com.peoplehere.shared.common.data.request.SignInRequestDto;
 import com.peoplehere.shared.common.data.request.SignUpRequestDto;
@@ -106,12 +107,13 @@ public class AccountService {
 	}
 
 	@Transactional
-	public void updateAlarmConsent(String userId, boolean alarmConsent) {
+	public void updateAlarmConsent(String userId, AlarmConsentRequestDto requestDto) {
 		Account account = accountRepository.findByEmail(userId)
 			.orElseThrow(() -> new AccountIdNotFoundException(userId));
 		Consent consent = consentRepository.findByAccountId(account.getId())
 			.orElseThrow(() -> new AccountIdNotFoundException(userId));
-		consent.setAlarmConsent(alarmConsent);
+
+		consent.setAlarmConsent(requestDto.getAlarm(), requestDto.isConsent());
 	}
 
 	/**
