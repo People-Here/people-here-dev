@@ -45,23 +45,15 @@ public class ProfileService {
 	 * @return
 	 */
 	@Transactional(readOnly = true)
-	public ProfileInfoResponseDto getProfileInfo(Long accountId, Region region) {
-		try {
-
-			LangCode langCode = region.getLangCode();
-			if (ORIGIN.equals(langCode)) {
-				return customAccountRepository.findProfileInfo(accountId, region, langCode).orElse(null);
-			}
-			return customAccountRepository.findProfileInfo(accountId, region, langCode).orElseGet(
-				() -> customAccountRepository.findProfileInfo(accountId, region, ORIGIN).orElse(null));
-
-		} catch (Exception exception) {
-			log.error("프로필 정보 조회 중 오류 발생 accountId: [{}], region: [{}]", accountId, region, exception);
-			alertWebhook.alertError("프로필 정보 조회 중 오류 발생",
-				"accountId: [%s], region: [%s], error: [%s]".formatted(accountId, region, exception.getMessage()));
-			throw new RuntimeException("프로필 정보 조회 중 오류 발생 accountId: %s, region: %s".formatted(accountId, region),
-				exception);
+	public ProfileInfoResponseDto getProfileInfo(Long accountId, Region region) throws EntityNotFoundException {
+		LangCode langCode = region.getLangCode();
+		if (ORIGIN.equals(langCode)) {
+			return customAccountRepository.findProfileInfo(accountId, region, langCode)
+				.orElseThrow(() -> new EntityNotFoundException("해당 계정이 존재하지 않습니다. id: %s".formatted(accountId)));
 		}
+		return customAccountRepository.findProfileInfo(accountId, region, langCode).orElseGet(
+			() -> customAccountRepository.findProfileInfo(accountId, region, ORIGIN)
+				.orElseThrow(() -> new EntityNotFoundException("해당 계정이 존재하지 않습니다. id: %s".formatted(accountId))));
 	}
 
 	/**

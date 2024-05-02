@@ -21,6 +21,7 @@ import com.peoplehere.shared.common.enums.Region;
 import com.peoplehere.shared.profile.data.request.ProfileInfoRequestDto;
 import com.peoplehere.shared.profile.data.response.ProfileInfoResponseDto;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -41,7 +42,12 @@ public class ProfileController {
 	@GetMapping(value = "/{accountId}/{region}")
 	public ResponseEntity<ProfileInfoResponseDto> getProfileInfo(@PathVariable Long accountId,
 		@PathVariable Region region) {
-		return ResponseEntity.ok(profileService.getProfileInfo(accountId, region));
+		try {
+			return ResponseEntity.ok(profileService.getProfileInfo(accountId, region));
+		} catch (EntityNotFoundException entityNotFoundException) {
+			log.error("해당 계정이 존재하지 않습니다. id: [{}], region: [{}]", accountId, region);
+			return ResponseEntity.notFound().build();
+		}
 	}
 
 	/**
