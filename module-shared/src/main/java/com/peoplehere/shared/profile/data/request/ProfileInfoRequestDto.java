@@ -27,7 +27,8 @@ public record ProfileInfoRequestDto(
 	LocalDate birthDate,
 	String placeId,
 	String job,
-	String school
+	String school,
+	boolean showBirth
 ) {
 }
 

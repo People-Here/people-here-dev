@@ -46,7 +46,8 @@ public class CustomAccountRepository {
 				accountInfo.school.as("school"),
 				placeInfo.address.as("address"),
 				account.birthDate.as("birthDate"),
-				Expressions.asEnum(langCode).as("langCode")))
+				Expressions.asEnum(langCode).as("langCode"),
+				account.showBirth.as("showBirth")))
 			.from(account)
 			.leftJoin(accountInfo).on(account.id.eq(accountInfo.accountId))
 			.leftJoin(place).on(account.placeId.eq(place.placeId))

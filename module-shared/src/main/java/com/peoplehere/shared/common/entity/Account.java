@@ -129,6 +129,11 @@ public class Account extends BaseTimeEntity implements UserDetails {
 	@Column(name = "deleted_at")
 	LocalDateTime deletedAt;
 
+	@Column(name = "show_birth")
+	@Comment("생년월일 노출 여부")
+	@Builder.Default
+	private boolean showBirth = true;
+
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
 		if (this.role == null) {
@@ -200,6 +205,7 @@ public class Account extends BaseTimeEntity implements UserDetails {
 	public void updateInfo(ProfileInfoRequestDto requestDto) {
 		this.langCodeList = requestDto.languages();
 		this.placeId = requestDto.placeId();
+		this.showBirth = requestDto.showBirth();
 	}
 
 	/**

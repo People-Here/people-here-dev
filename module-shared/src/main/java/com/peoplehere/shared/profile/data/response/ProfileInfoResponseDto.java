@@ -40,11 +40,19 @@ public class ProfileInfoResponseDto {
 	@JsonFormat(pattern = "yyyyMMdd")
 	private LocalDate birthDate;
 	private LangCode langCode;
+	private boolean showBirth;
 
 	public String getProfileImageUrl() {
 		if (StringUtils.hasText(optimizedProfileImageUrl)) {
 			return optimizedProfileImageUrl;
 		}
 		return profileImageUrl;
+	}
+
+	public LocalDate getBirthDate() {
+		if (showBirth) {
+			return this.birthDate;
+		}
+		return null;
 	}
 }
