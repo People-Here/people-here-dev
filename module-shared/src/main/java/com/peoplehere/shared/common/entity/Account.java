@@ -15,6 +15,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.peoplehere.shared.common.converter.LangCodeConverter;
+import com.peoplehere.shared.common.data.request.AccountEmailRequestDto;
+import com.peoplehere.shared.common.data.request.AccountNameRequestDto;
 import com.peoplehere.shared.common.enums.AccountAuthority;
 import com.peoplehere.shared.common.enums.AccountRole;
 import com.peoplehere.shared.common.enums.Gender;
@@ -216,5 +218,21 @@ public class Account extends BaseTimeEntity implements UserDetails {
 	public void updateProfileImageUrl(String profileImageUrl) {
 		this.profileImageUrl = profileImageUrl;
 		this.optimizedProfileImageUrl = null;
+	}
+
+	/**
+	 * 유저의 이름 변경
+	 */
+	public void updateName(AccountNameRequestDto requestDto) {
+		this.firstName = requestDto.firstName();
+		this.lastName = requestDto.lastName();
+	}
+
+	/**
+	 * 유저의 이메일과 아이디 변경
+	 */
+	public void updateEmail(AccountEmailRequestDto requestDto) {
+		this.userId = requestDto.email();
+		this.email = requestDto.email();
 	}
 }

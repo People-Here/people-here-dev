@@ -17,6 +17,8 @@ import com.peoplehere.api.common.config.security.Token;
 import com.peoplehere.api.common.config.security.TokenProvider;
 import com.peoplehere.api.common.exception.AccountIdNotFoundException;
 import com.peoplehere.api.common.exception.DuplicateException;
+import com.peoplehere.shared.common.data.request.AccountEmailRequestDto;
+import com.peoplehere.shared.common.data.request.AccountNameRequestDto;
 import com.peoplehere.shared.common.data.request.AlarmConsentRequestDto;
 import com.peoplehere.shared.common.data.request.PasswordRequestDto;
 import com.peoplehere.shared.common.data.request.SignInRequestDto;
@@ -165,6 +167,32 @@ public class AccountService {
 			alertWebhook.alertInfo("비활성화 계정 삭제 완료",
 				"삭제된 계정 수: [%s] 실행 시간: [%s]ms".formatted(staleAccountIdList.size(), end));
 		}
+	}
+
+	/**
+	 * 사용자 이름을 변경한다
+	 * @param userId
+	 * @param requestDto
+	 */
+	@Transactional
+	public void updateName(String userId, AccountNameRequestDto requestDto) {
+		Account account = accountRepository.findByEmail(userId)
+			.orElseThrow(() -> new AccountIdNotFoundException(userId));
+		account.updateName(requestDto);
+	}
+
+	/**
+	 * 사용자 이메일과 아이디를 변경한다
+	 * @param userId
+	 * @param requestDto
+	 */
+	@Transactional
+	public void updateEmail(String userId, AccountEmailRequestDto requestDto) {
+		Account account = accountRepository.findByEmail(userId)
+			.orElseThrow(() -> new AccountIdNotFoundException(userId));
+		account.updateEmail(requestDto);
+		// redis에 저장된 기존 유저id에 대한 refreshToken 삭제
+		redisTaskService.expireRefreshToken(requestDto.email());
 	}
 
 	/**

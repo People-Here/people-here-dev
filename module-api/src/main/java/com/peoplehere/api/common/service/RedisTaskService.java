@@ -73,6 +73,16 @@ public class RedisTaskService {
 	}
 
 	/**
+	 * refresh token 만료
+	 * @param userId
+	 */
+	public void expireRefreshToken(String userId) {
+		String key = generateRefreshTokenKey(stage, userId);
+		redisTemplate.expire(key, 0, TimeUnit.MILLISECONDS);
+		log.info("refresh token 만료 성공 - userId: {}", userId);
+	}
+
+	/**
 	 * key에 해당하는 value가 일치하는지 확인
 	 * @param key email verify code key
 	 * @param value email verify code

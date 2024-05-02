@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.peoplehere.api.common.annotation.CheckAbusing;
 import com.peoplehere.api.common.annotation.CheckEmailVerificationLimit;
 import com.peoplehere.api.common.annotation.CheckEmailVerifyLimit;
+import com.peoplehere.api.common.config.authorize.UpdateProfileAuthorize;
 import com.peoplehere.api.common.data.request.MailVerificationRequestDto;
 import com.peoplehere.api.common.data.request.MailVerifyRequestDto;
 import com.peoplehere.api.common.data.response.MailVerificationResponseDto;
@@ -29,6 +30,8 @@ import com.peoplehere.api.common.exception.ClientBindException;
 import com.peoplehere.api.common.exception.DuplicateException;
 import com.peoplehere.api.common.service.AccountService;
 import com.peoplehere.api.common.service.VerifyService;
+import com.peoplehere.shared.common.data.request.AccountEmailRequestDto;
+import com.peoplehere.shared.common.data.request.AccountNameRequestDto;
 import com.peoplehere.shared.common.data.request.AlarmConsentRequestDto;
 import com.peoplehere.shared.common.data.request.PasswordRequestDto;
 import com.peoplehere.shared.common.data.request.SignInRequestDto;
@@ -219,5 +222,47 @@ public class AccountController {
 			log.error("계정: {} 비활성화 중 오류 발생", accountId, e);
 			return ResponseEntity.internalServerError().build();
 		}
+	}
+
+	/**
+	 * 유저 이름 수정
+	 * @param requestDto 이름 재설정 요청 정보
+	 * @param result 바인딩 결과
+	 * @return
+	 * @throws BindException 바인딩 오류
+	 */
+	@CheckAbusing
+	@UpdateProfileAuthorize
+	@PutMapping("/name")
+	public ResponseEntity<String> modifyAccountName(@Validated @RequestBody AccountNameRequestDto requestDto,
+		Principal principal, BindingResult result) throws
+		BindException {
+
+		if (result.hasErrors()) {
+			throw new BindException(result);
+		}
+		accountService.updateName(principal.getName(), requestDto);
+		return ResponseEntity.ok().body("success");
+	}
+
+	/**
+	 * 유저 이메일 재설정
+	 * @param requestDto 이메일 재설정 요청 정보
+	 * @param result 바인딩 결과
+	 * @return
+	 * @throws BindException 바인딩 오류
+	 */
+	@CheckAbusing
+	@UpdateProfileAuthorize
+	@PutMapping("/email")
+	public ResponseEntity<String> modifyAccountEmail(@Validated @RequestBody AccountEmailRequestDto requestDto,
+		Principal principal, BindingResult result) throws
+		BindException {
+
+		if (result.hasErrors()) {
+			throw new BindException(result);
+		}
+		accountService.updateEmail(principal.getName(), requestDto);
+		return ResponseEntity.ok().body("success");
 	}
 }
