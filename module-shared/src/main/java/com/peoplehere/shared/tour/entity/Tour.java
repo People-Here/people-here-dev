@@ -47,6 +47,11 @@ public class Tour extends BaseTimeEntity {
 	@Comment("테마")
 	private String theme;
 
+	@Column(name = "direct_message_status")
+	@Comment("쪽지 활성화 여부")
+	@Builder.Default
+	private boolean directMessageStatus = true;
+
 	public void updateInfo(TourUpdateRequestDto requestDto) {
 		this.placeId = requestDto.placeId();
 		this.theme = requestDto.theme();

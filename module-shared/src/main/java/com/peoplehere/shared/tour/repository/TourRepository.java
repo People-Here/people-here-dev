@@ -14,4 +14,6 @@ public interface TourRepository extends JpaRepository<Tour, Long> {
 	void deleteAllByAccountIdIn(List<Long> accountIdList);
 
 	Optional<Tour> findByIdAndAccountId(long id, long accountId);
+
+	Optional<Tour> findByIdAndDirectMessageStatus(long id, boolean directMessageStatus);
 }

@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.peoplehere.api.common.annotation.CheckAbusing;
+import com.peoplehere.api.common.config.authorize.CreateMessageAuthorize;
 import com.peoplehere.api.common.config.authorize.UpdateTourAuthorize;
 import com.peoplehere.api.tour.service.TourService;
 import com.peoplehere.shared.common.enums.LangCode;
@@ -25,6 +26,7 @@ import com.peoplehere.shared.common.enums.Region;
 import com.peoplehere.shared.tour.data.request.TourCreateRequestDto;
 import com.peoplehere.shared.tour.data.request.TourIdRequestDto;
 import com.peoplehere.shared.tour.data.request.TourListRequestDto;
+import com.peoplehere.shared.tour.data.request.TourMessageCreateRequestDto;
 import com.peoplehere.shared.tour.data.request.TourUpdateRequestDto;
 import com.peoplehere.shared.tour.data.response.TourListResponseDto;
 import com.peoplehere.shared.tour.data.response.TourResponseDto;
@@ -243,6 +245,30 @@ public class TourController {
 			return ResponseEntity.ok().build();
 		} catch (Exception e) {
 			log.error("투어 좋아요 누르기 id: {} userId: {} 중 오류 발생", requestDto.id(), principal.getName(), e);
+			return ResponseEntity.internalServerError().build();
+		}
+	}
+
+	/**
+	 * 해당 투어에 대한 쪽지 보내기
+	 * @return
+	 */
+	@CheckAbusing
+	@CreateMessageAuthorize
+	@PostMapping("/messages")
+	public ResponseEntity<Object> createMessage(@Validated @RequestBody TourMessageCreateRequestDto requestDto,
+		Principal principal, BindingResult bindingResult) throws BindException {
+		if (bindingResult.hasErrors()) {
+			throw new BindException(bindingResult);
+		}
+		try {
+			tourService.createMessage(principal.getName(), requestDto);
+			return ResponseEntity.ok().build();
+		} catch (IllegalArgumentException illegalArgumentException) {
+			return ResponseEntity.badRequest().body("쪽지 보내기 실패 - 잘못된 요청 정보");
+		} catch (EntityNotFoundException entityNotFoundException) {
+			return ResponseEntity.notFound().build();
+		} catch (Exception exception) {
 			return ResponseEntity.internalServerError().build();
 		}
 	}

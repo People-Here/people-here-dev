@@ -18,13 +18,15 @@ public enum AccountRole {
 		AccountAuthority.ACTIVE_USER,
 		AccountAuthority.READ_TOUR_POST,
 		AccountAuthority.CREATE_TOUR,
-		AccountAuthority.UPDATE_PROFILE
+		AccountAuthority.UPDATE_PROFILE,
+		AccountAuthority.CREATE_MESSAGE
 	)),
 
 	USER("ROLE_USER", Arrays.asList(
 		AccountAuthority.READ_TOUR_POST,
 		AccountAuthority.CREATE_TOUR,
-		AccountAuthority.UPDATE_PROFILE
+		AccountAuthority.UPDATE_PROFILE,
+		AccountAuthority.CREATE_MESSAGE
 	));
 
 	private final String value;

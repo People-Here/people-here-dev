@@ -20,6 +20,7 @@ import com.peoplehere.shared.common.service.FileService;
 import com.peoplehere.shared.common.webhook.AlertWebhook;
 import com.peoplehere.shared.tour.data.request.TourCreateRequestDto;
 import com.peoplehere.shared.tour.data.request.TourListRequestDto;
+import com.peoplehere.shared.tour.data.request.TourMessageCreateRequestDto;
 import com.peoplehere.shared.tour.data.request.TourUpdateRequestDto;
 import com.peoplehere.shared.tour.data.response.TourListResponseDto;
 import com.peoplehere.shared.tour.data.response.TourResponseDto;
@@ -27,10 +28,12 @@ import com.peoplehere.shared.tour.entity.Tour;
 import com.peoplehere.shared.tour.entity.TourImage;
 import com.peoplehere.shared.tour.entity.TourInfo;
 import com.peoplehere.shared.tour.entity.TourLike;
+import com.peoplehere.shared.tour.repository.CustomTourMessageRepository;
 import com.peoplehere.shared.tour.repository.CustomTourRepository;
 import com.peoplehere.shared.tour.repository.TourImageRepository;
 import com.peoplehere.shared.tour.repository.TourInfoRepository;
 import com.peoplehere.shared.tour.repository.TourLikeRepository;
+import com.peoplehere.shared.tour.repository.TourMessageRepository;
 import com.peoplehere.shared.tour.repository.TourRepository;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -46,6 +49,8 @@ public class TourService {
 	private final TourImageRepository tourImageRepository;
 	private final TourInfoRepository tourInfoRepository;
 	private final TourLikeRepository tourLikeRepository;
+	private final TourMessageRepository tourMessageRepository;
+	private final CustomTourMessageRepository customTourMessageRepository;
 	private final CustomTourRepository customTourRepository;
 	private final AccountRepository accountRepository;
 	private final FileService fileService;
@@ -238,5 +243,66 @@ public class TourService {
 
 		tourLike.toggleLike();
 		tourLikeRepository.save(tourLike);
+	}
+
+	/**
+	 * 투어 메시지 보내기
+	 *
+	 * @param senderName 보내는 사람 아이디
+	 * @param requestDto 메시지 정보
+	 * @throws EntityNotFoundException 요청 정보에 해당하는 entity를 찾을 수 없는 경우
+	 * @throws IllegalArgumentException 요청 정보가 잘못된 경우
+	 */
+	@Transactional
+	public void createMessage(String senderName, TourMessageCreateRequestDto requestDto) throws
+		EntityNotFoundException, IllegalArgumentException {
+		try {
+			// 1. sender와 receiver가 존재하는지 확인
+			long senderId = accountRepository.findByUserId(senderName)
+				.map(Account::getId)
+				.orElseThrow(() -> new EntityNotFoundException("sender - 유저[%s]를 찾을 수 없습니다.".formatted(senderName)));
+
+			long receiverId = accountRepository.findById(requestDto.receiverId())
+				.map(Account::getId)
+				.orElseThrow(
+					() -> new EntityNotFoundException(
+						"receiver - 유저[%s]를 찾을 수 없습니다.".formatted(requestDto.receiverId())));
+
+			if (senderId == receiverId) {
+				throw new IllegalArgumentException("자기 자신에게 쪽지를 보낼 수 없습니다.");
+			}
+
+			Tour tour = tourRepository.findByIdAndDirectMessageStatus(requestDto.tourId(), true)
+				.orElseThrow(
+					() -> new IllegalArgumentException("쪽지를 보낼수없는 투어 정보: [%s]입니다".formatted(requestDto.tourId())));
+
+			if (!List.of(senderId, receiverId).contains(tour.getAccountId())) {
+				throw new IllegalArgumentException(
+					"쪽지를 보낼수없는 투어 정보 - 요청 정보: [%s], 투어 생성 유저: [%s]".formatted(requestDto, tour.getAccountId()));
+			}
+
+			if (!customTourMessageRepository.existsTourMessage(tour.getId(), senderId, receiverId)) {
+				if (tour.getAccountId() == senderId) {
+					throw new IllegalArgumentException("투어의 주인은 쪽지룸을 만들 수 없습니다.");
+				}
+			}
+
+			// 2. 메시지 저장
+			tourMessageRepository.save(TourMessageCreateRequestDto.toTourMessageEntity(requestDto, senderId));
+
+		} catch (IllegalArgumentException illegalArgumentException) {
+			log.error("쪽지 보내기 실패 - 잘못된 요청 정보", illegalArgumentException);
+			alertWebhook.alertError("쪽지 보내기 실패 - 잘못된 요청 정보",
+				"request: [%s], error: [%s]".formatted(requestDto, illegalArgumentException.getMessage()));
+			throw illegalArgumentException;
+		} catch (EntityNotFoundException entityNotFoundException) {
+			log.error("쪽지 보내기 실패 - 해당 투어[%s]를 찾을 수 없습니다.".formatted(requestDto.tourId()), entityNotFoundException);
+			throw entityNotFoundException;
+		} catch (Exception exception) {
+			log.error("쪽지 보내기 중 오류 발생", exception);
+			alertWebhook.alertError("쪽지 보내기 중 오류 발생",
+				"request: [%s], error: [%s]".formatted(requestDto, exception.getMessage()));
+			throw new RuntimeException("쪽지 보내기 중 오류 발생: %s".formatted(requestDto), exception);
+		}
 	}
 }
