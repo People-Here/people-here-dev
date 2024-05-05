@@ -48,6 +48,7 @@ public class GoogleMapServiceImpl implements MapService {
 	private final PlaceRepository placeRepository;
 	private final PlaceInfoRepository placeInfoRepository;
 	private final RedisTaskService redisTaskService;
+	private static final String POINT_COUNTRY = "country:KR";
 	private static final String PLACE_DETAIL_FIELDS =
 		"name,"
 			+ "place_id,"
@@ -81,6 +82,7 @@ public class GoogleMapServiceImpl implements MapService {
 				.queryParam("key", googleMapProperties.getKey())
 				.queryParam("input", name)
 				.queryParam("language", region.getMapLangCode().getCode())
+				.queryParam("components", POINT_COUNTRY)
 				.build())
 			.retrieve()
 			.onStatus(
