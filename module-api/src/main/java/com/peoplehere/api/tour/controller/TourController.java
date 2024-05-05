@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.peoplehere.api.common.annotation.CheckAbusing;
 import com.peoplehere.api.common.config.authorize.CreateMessageAuthorize;
 import com.peoplehere.api.common.config.authorize.UpdateTourAuthorize;
+import com.peoplehere.api.common.service.MessageService;
 import com.peoplehere.api.tour.service.TourService;
 import com.peoplehere.shared.common.enums.LangCode;
 import com.peoplehere.shared.common.enums.Region;
@@ -27,8 +28,10 @@ import com.peoplehere.shared.tour.data.request.TourCreateRequestDto;
 import com.peoplehere.shared.tour.data.request.TourIdRequestDto;
 import com.peoplehere.shared.tour.data.request.TourListRequestDto;
 import com.peoplehere.shared.tour.data.request.TourMessageCreateRequestDto;
+import com.peoplehere.shared.tour.data.request.TourMessageTranslateRequestDto;
 import com.peoplehere.shared.tour.data.request.TourUpdateRequestDto;
 import com.peoplehere.shared.tour.data.response.TourListResponseDto;
+import com.peoplehere.shared.tour.data.response.TourMessageTranslateResponseDto;
 import com.peoplehere.shared.tour.data.response.TourResponseDto;
 
 import jakarta.annotation.Nullable;
@@ -43,6 +46,7 @@ import lombok.extern.slf4j.Slf4j;
 public class TourController {
 
 	private final TourService tourService;
+	private final MessageService messageService;
 
 	/**
 	 * 장소 목록 조회
@@ -268,6 +272,29 @@ public class TourController {
 			return ResponseEntity.badRequest().body("쪽지 보내기 실패 - 잘못된 요청 정보");
 		} catch (EntityNotFoundException entityNotFoundException) {
 			return ResponseEntity.notFound().build();
+		} catch (Exception exception) {
+			return ResponseEntity.internalServerError().build();
+		}
+	}
+
+	/**
+	 * 투어 메시지에 대한 번역 요청
+	 * @param requestDto
+	 * @param bindingResult
+	 * @return
+	 * @throws BindException
+	 */
+	@CheckAbusing
+	@CreateMessageAuthorize
+	@PostMapping("/messages/translate")
+	public ResponseEntity<TourMessageTranslateResponseDto> translateMessage(
+		@Validated @RequestBody TourMessageTranslateRequestDto requestDto, BindingResult bindingResult)
+		throws BindException {
+		if (bindingResult.hasErrors()) {
+			throw new BindException(bindingResult);
+		}
+		try {
+			return ResponseEntity.ok(messageService.translateTourMessage(requestDto));
 		} catch (Exception exception) {
 			return ResponseEntity.internalServerError().build();
 		}
