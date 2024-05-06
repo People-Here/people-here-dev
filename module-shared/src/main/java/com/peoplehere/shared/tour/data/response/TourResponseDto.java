@@ -43,6 +43,7 @@ public class TourResponseDto {
 		private Boolean isDefaultImage;
 		private List<PlaceImageInfo> imageUrlList;
 		private String district;
+		private String address;
 
 		public List<PlaceImageInfo> getImageUrlList() {
 			if (Boolean.TRUE.equals(isDefaultImage)) {
