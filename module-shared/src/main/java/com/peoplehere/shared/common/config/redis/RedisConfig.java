@@ -8,9 +8,11 @@ import org.springframework.data.redis.connection.lettuce.LettuceClientConfigurat
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.peoplehere.shared.tour.data.response.PlaceInfoResponseDto;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -71,6 +73,22 @@ public class RedisConfig {
 		redisTemplate.setConnectionFactory(connectionFactory);
 		redisTemplate.setKeySerializer(new StringRedisSerializer());
 		redisTemplate.setValueSerializer(new StringRedisSerializer());
+		return redisTemplate;
+	}
+
+	@Bean
+	public RedisTemplate<String, PlaceInfoResponseDto> placeInfoRedisTemplate(
+		RedisConnectionFactory connectionFactory) {
+		var redisTemplate = new RedisTemplate<String, PlaceInfoResponseDto>();
+		redisTemplate.setConnectionFactory(connectionFactory);
+		var serializer = new Jackson2JsonRedisSerializer<>(objectMapper, PlaceInfoResponseDto.class);
+
+		redisTemplate.setKeySerializer(new StringRedisSerializer());
+		redisTemplate.setValueSerializer(serializer);
+
+		redisTemplate.setHashKeySerializer(new StringRedisSerializer());
+		redisTemplate.setHashValueSerializer(serializer);
+
 		return redisTemplate;
 	}
 

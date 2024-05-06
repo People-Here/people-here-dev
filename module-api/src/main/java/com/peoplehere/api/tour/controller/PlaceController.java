@@ -1,5 +1,7 @@
 package com.peoplehere.api.tour.controller;
 
+import java.security.Principal;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
@@ -18,6 +20,7 @@ import com.peoplehere.shared.tour.data.request.PlaceInfoRequestDto;
 import com.peoplehere.shared.tour.data.response.PlaceInfoListResponseDto;
 import com.peoplehere.shared.tour.data.response.PlaceInfoResponseDto;
 
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -59,14 +62,15 @@ public class PlaceController {
 	 */
 	@CheckAbusing
 	@PostMapping("")
-	public ResponseEntity<PlaceInfoResponseDto> addPlaceDetailInfo(
-		@RequestBody @Validated PlaceInfoRequestDto requestDto,
+	public ResponseEntity<PlaceInfoResponseDto> getPlaceDetailInfo(
+		@RequestBody @Validated PlaceInfoRequestDto requestDto, @Nullable Principal principal,
 		BindingResult bindingResult) throws BindException {
 		if (bindingResult.hasErrors()) {
 			throw new BindException(bindingResult);
 		}
 		try {
-			return ResponseEntity.ok(mapService.addPlaceDetailInfo(requestDto));
+			String userId = principal == null ? null : principal.getName();
+			return ResponseEntity.ok(mapService.getPlaceDetailInfo(userId, requestDto));
 		} catch (Exception e) {
 			log.error("장소 id: {}, region: {} 상세 정보 추가 중 오류 발생", requestDto.placeId(), requestDto.region(), e);
 			return ResponseEntity.internalServerError().build();

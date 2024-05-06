@@ -57,4 +57,14 @@ public class RedisKeyProperties {
 		return String.format("%s:spring:email:verify:request:%s", prefix, email);
 	}
 
+	/**
+	 * 사용자의 최근 검색 장소를 저장하기 위한 key 생성
+	 * @param prefix
+	 * @param userId
+	 * @return
+	 */
+	public static String generateRecentSearchPlaceKey(String prefix, String userId) {
+		return String.format("%s:spring:recent:search:%s:place", prefix, userId);
+	}
+
 }

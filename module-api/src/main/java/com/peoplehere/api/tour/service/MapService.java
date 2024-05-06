@@ -19,9 +19,10 @@ public interface MapService {
 	PlaceInfoListResponseDto getPlaceInfoList(String name, Region region);
 
 	/**
-	 * 장소 상세 정보 추가
+	 * 장소 상세 정보 가져오기
+	 * @param userId 사용자id
 	 * @param requestDto 장소id, 언어코드
 	 */
-	PlaceInfoResponseDto addPlaceDetailInfo(PlaceInfoRequestDto requestDto);
+	PlaceInfoResponseDto getPlaceDetailInfo(String userId, PlaceInfoRequestDto requestDto);
 
 }

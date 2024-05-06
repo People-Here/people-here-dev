@@ -4,12 +4,14 @@ import java.time.Duration;
 import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.peoplehere.api.common.exception.HttpRequestRetryException;
@@ -111,15 +113,43 @@ public class GoogleMapServiceImpl implements MapService {
 	}
 
 	/**
-	 * 장소Id로 장소 상세 정보를 조회한 후 저장
+	 * 장소Id로 장소 상세 정보를 조회한 후 없으면 추가 후 반환
+	 * 최근 검색어 내역 저장을 위해 추가 TODO: 이벤트 방식으로 빼자
+	 * @param userId 사용자id
 	 * @param requestDto 장소 상세 정보
 	 * @return
 	 */
 	@Override
 	@Transactional
-	public PlaceInfoResponseDto addPlaceDetailInfo(PlaceInfoRequestDto requestDto) throws NoSuchElementException {
+	public PlaceInfoResponseDto getPlaceDetailInfo(String userId, PlaceInfoRequestDto requestDto) throws
+		NoSuchElementException {
+		Optional<PlaceInfo> placeInfo = placeInfoRepository.findByPlaceIdAndLangCode(requestDto.placeId(),
+			requestDto.region().getMapLangCode());
+
+		PlaceInfoResponseDto placeInfoResponseDto = placeInfo.map(info -> PlaceInfoResponseDto.builder()
+				.placeId(info.getPlaceId())
+				.name(info.getName())
+				.address(info.getAddress())
+				.build())
+			.orElseGet(() -> addPlaceDetailInfo(requestDto));
+
+		// 3. 검색어 내역에 저장
+		if (StringUtils.hasText(userId)) {
+			redisTaskService.addRecentSearchPlaceInfo(userId, placeInfoResponseDto);
+		}
+		return placeInfoResponseDto;
+	}
+
+	/**
+	 * Google Place API를 사용해 장소 상세 정보 조회
+	 * 재시도 1회 1초 간격
+	 * @param requestDto
+	 * @return
+	 */
+	private PlaceInfoResponseDto addPlaceDetailInfo(PlaceInfoRequestDto requestDto) throws NoSuchElementException {
 		LangCode langCode = requestDto.region().getMapLangCode();
 		try {
+			log.info("장소 상세 정보 추가 요청 - placeId: {}, langCode: {}", requestDto.placeId(), langCode);
 			PlaceDetailResponseDto responseDto = webClient.get()
 				.uri(uriBuilder -> uriBuilder
 					.path("/place/details/json")
@@ -135,6 +165,7 @@ public class GoogleMapServiceImpl implements MapService {
 				.retryWhen(Retry.fixedDelay(1, Duration.ofSeconds(1)))
 				.block();
 
+			log.info("장소 상세 정보 추가 성공 - responseDto: {}, langCode: {}", responseDto, langCode);
 			Place place = convertPlaceEntity(Objects.requireNonNull(responseDto));
 			PlaceInfo placeInfo = convertPlaceInfoEntity(Objects.requireNonNull(responseDto), langCode);
 
@@ -166,6 +197,12 @@ public class GoogleMapServiceImpl implements MapService {
 		});
 	}
 
+	/**
+	 * TODO: 나중에 좀 고치기
+	 * @param responseDto
+	 * @param langCode
+	 * @return
+	 */
 	private PlaceInfo convertPlaceInfoEntity(PlaceDetailResponseDto responseDto, LangCode langCode) {
 		PlaceDetailResponseDto.PlaceDetails details = responseDto.getPlaceDetails();
 		String placeId = details.getPlaceId();

@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 
 import com.peoplehere.api.common.config.security.Token;
@@ -15,6 +16,7 @@ import com.peoplehere.api.common.config.security.TokenProperties;
 import com.peoplehere.api.common.config.security.VerifyCodeProperties;
 import com.peoplehere.api.common.data.response.MailVerificationResponseDto;
 import com.peoplehere.shared.common.webhook.AlertWebhook;
+import com.peoplehere.shared.tour.data.response.PlaceInfoResponseDto;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +32,7 @@ public class RedisTaskService {
 	private final TokenProperties tokenProperties;
 	private final VerifyCodeProperties verifyCodeProperties;
 	private final RedisTemplate<String, String> redisTemplate;
+	private final RedisTemplate<String, PlaceInfoResponseDto> placeInfoRedisTemplate;
 	private final AlertWebhook alertWebhook;
 
 	/**
@@ -80,6 +83,35 @@ public class RedisTaskService {
 		String key = generateRefreshTokenKey(stage, userId);
 		redisTemplate.expire(key, 0, TimeUnit.MILLISECONDS);
 		log.info("refresh token 만료 성공 - userId: {}", userId);
+	}
+
+	/**
+	 * 유저의 최근 검색어 내역을 저장합니다.
+	 *
+	 * @param userId 유저의 계정 ID
+	 * @param responseDto 검색한 장소 정보
+	 */
+	public void addRecentSearchPlaceInfo(String userId, PlaceInfoResponseDto responseDto) {
+		try {
+			String key = generateRecentSearchPlaceKey(stage, userId);
+			long score = System.currentTimeMillis(); // 현재 시간을 점수로 사용
+			ZSetOperations<String, PlaceInfoResponseDto> zSetOperations = placeInfoRedisTemplate.opsForZSet();
+
+			// 새로운 검색어를 추가하거나 업데이트합니다. 중복된 placeId가 있을 경우 자동으로 업데이트
+			zSetOperations.add(key, responseDto, score);
+
+			// set 크기가 10을 초과하는지 확인하고 가장 오래된 데이터
+			Long size = zSetOperations.size(key);
+			if (size != null && size > 10) {
+				zSetOperations.removeRange(key, 0, size - 11);
+			}
+		} catch (Exception e) {
+			log.error("redis 최근 검색어 추가 실패 - userId: {}, responseDto: {}", userId, responseDto, e);
+			alertWebhook.alertError(
+				"redis 최근 검색어 추가 실패 로직의 영향 없도록 skip",
+				"userId: [%s], responseDto: [%s], error: [%s]".formatted(userId, responseDto, e.getMessage()));
+		}
+
 	}
 
 	/**
