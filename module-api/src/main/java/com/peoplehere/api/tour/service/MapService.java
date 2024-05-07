@@ -2,6 +2,7 @@ package com.peoplehere.api.tour.service;
 
 import com.peoplehere.shared.common.enums.Region;
 import com.peoplehere.shared.tour.data.request.PlaceInfoRequestDto;
+import com.peoplehere.shared.tour.data.response.PlaceInfoHistoryResponseDto;
 import com.peoplehere.shared.tour.data.response.PlaceInfoListResponseDto;
 import com.peoplehere.shared.tour.data.response.PlaceInfoResponseDto;
 
@@ -24,5 +25,12 @@ public interface MapService {
 	 * @param requestDto 장소id, 언어코드
 	 */
 	PlaceInfoResponseDto getPlaceDetailInfo(String userId, PlaceInfoRequestDto requestDto);
+
+	/**
+	 * 유저의 장소 검색 기록 가져오기
+	 * @param userId
+	 * @return
+	 */
+	PlaceInfoHistoryResponseDto getSearchHistory(String userId);
 
 }

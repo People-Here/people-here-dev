@@ -71,7 +71,8 @@ public class WebSecurityConfig {
 							isAdmin || ipAccessManager.isMetricNetwork(object.getRequest()));
 					})
 
-					.requestMatchers("/api/account/alarm", "/api/user", "/api/tours", "/api/tours/message")
+					.requestMatchers("/api/account/alarm", "/api/user", "/api/tours", "/api/tours/message",
+						"/api/places/search-history")
 					.authenticated()
 
 					.requestMatchers(HttpMethod.DELETE, "/api/account/{accountId}").authenticated()

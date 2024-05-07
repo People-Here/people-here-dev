@@ -17,6 +17,7 @@ import com.peoplehere.api.common.annotation.CheckAbusing;
 import com.peoplehere.api.tour.service.MapService;
 import com.peoplehere.shared.common.enums.Region;
 import com.peoplehere.shared.tour.data.request.PlaceInfoRequestDto;
+import com.peoplehere.shared.tour.data.response.PlaceInfoHistoryResponseDto;
 import com.peoplehere.shared.tour.data.response.PlaceInfoListResponseDto;
 import com.peoplehere.shared.tour.data.response.PlaceInfoResponseDto;
 
@@ -77,4 +78,19 @@ public class PlaceController {
 		}
 	}
 
+	/**
+	 * 유저의 장소 검색 기록 조회
+	 * @param principal
+	 * @return 장소 정보 목록
+	 */
+	@CheckAbusing
+	@GetMapping("/search-history")
+	public ResponseEntity<PlaceInfoHistoryResponseDto> getSearchPlaceHistory(Principal principal) {
+		try {
+			return ResponseEntity.ok(mapService.getSearchHistory(principal.getName()));
+		} catch (Exception e) {
+			log.error("장소 검색 기록 조회 중 오류 발생", e);
+			return ResponseEntity.internalServerError().build();
+		}
+	}
 }

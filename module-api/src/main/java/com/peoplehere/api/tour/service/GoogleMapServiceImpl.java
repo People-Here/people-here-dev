@@ -22,6 +22,7 @@ import com.peoplehere.shared.common.enums.Region;
 import com.peoplehere.shared.common.webhook.AlertWebhook;
 import com.peoplehere.shared.tour.data.request.PlaceInfoRequestDto;
 import com.peoplehere.shared.tour.data.response.PlaceDetailResponseDto;
+import com.peoplehere.shared.tour.data.response.PlaceInfoHistoryResponseDto;
 import com.peoplehere.shared.tour.data.response.PlaceInfoListResponseDto;
 import com.peoplehere.shared.tour.data.response.PlaceInfoResponseDto;
 import com.peoplehere.shared.tour.entity.Place;
@@ -138,6 +139,21 @@ public class GoogleMapServiceImpl implements MapService {
 			redisTaskService.addRecentSearchPlaceInfo(userId, placeInfoResponseDto);
 		}
 		return placeInfoResponseDto;
+	}
+
+	/**
+	 * redis에서 최근 장소 검색어 내역 조회
+	 * @param userId
+	 * @return
+	 */
+	@Override
+	public PlaceInfoHistoryResponseDto getSearchHistory(String userId) {
+		try {
+			return redisTaskService.getRecentSearchPlaceInfo(userId);
+		} catch (Exception exception) {
+			log.error("유저: {} 장소 검색 기록 조회 중 오류 발생", userId, exception);
+			throw exception;
+		}
 	}
 
 	/**

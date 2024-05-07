@@ -2,7 +2,9 @@ package com.peoplehere.api.common.service;
 
 import static com.peoplehere.shared.common.config.redis.RedisKeyProperties.*;
 
+import java.util.ArrayList;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +18,7 @@ import com.peoplehere.api.common.config.security.TokenProperties;
 import com.peoplehere.api.common.config.security.VerifyCodeProperties;
 import com.peoplehere.api.common.data.response.MailVerificationResponseDto;
 import com.peoplehere.shared.common.webhook.AlertWebhook;
+import com.peoplehere.shared.tour.data.response.PlaceInfoHistoryResponseDto;
 import com.peoplehere.shared.tour.data.response.PlaceInfoResponseDto;
 
 import lombok.RequiredArgsConstructor;
@@ -111,7 +114,26 @@ public class RedisTaskService {
 				"redis 최근 검색어 추가 실패 로직의 영향 없도록 skip",
 				"userId: [%s], responseDto: [%s], error: [%s]".formatted(userId, responseDto, e.getMessage()));
 		}
+	}
 
+	/**
+	 * 유저의 최근 검색어 내역을 조회합니다.
+	 * 최근 검색어 내역은 최대 10개까지 조회 가능
+	 * @param userId
+	 * @return
+	 */
+	public PlaceInfoHistoryResponseDto getRecentSearchPlaceInfo(String userId) {
+		String key = generateRecentSearchPlaceKey(stage, userId);
+		ZSetOperations<String, PlaceInfoResponseDto> zSetOperations = placeInfoRedisTemplate.opsForZSet();
+		Set<PlaceInfoResponseDto> responseDtoSet = zSetOperations.reverseRange(key, 0, 9);
+
+		if (responseDtoSet == null) {
+			return null;
+		} else {
+			return PlaceInfoHistoryResponseDto.builder()
+				.places(new ArrayList<>(responseDtoSet))
+				.build();
+		}
 	}
 
 	/**
