@@ -6,12 +6,14 @@ import static org.springframework.http.HttpHeaders.*;
 import java.io.IOException;
 
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -44,6 +46,10 @@ public class AuthorizationFilter extends OncePerRequestFilter {
 			SecurityContextHolder.getContext().setAuthentication(authentication);
 			log.debug("{}: 인증 정보 security context 저장, uri: {}", authentication.getName(), uri);
 
+		} catch (ExpiredJwtException expiredJwtException) {
+			log.debug("만료된 토큰, ip: {}, uri: {}", ip, uri);
+			response.setStatus(HttpStatus.FORBIDDEN.value());
+			return;
 		} catch (Exception e) {
 			log.debug("인가 처리 실패 기록 : ip: {}, uri: {} - {}", ip, uri, e.getMessage());
 		}

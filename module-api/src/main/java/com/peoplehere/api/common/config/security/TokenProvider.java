@@ -90,7 +90,7 @@ public class TokenProvider {
 		return new UsernamePasswordAuthenticationToken(claims.getSubject(), token, authorities);
 	}
 
-	public Jws<Claims> parseJwt(TokenType type, String token) {
+	public Jws<Claims> parseJwt(TokenType type, String token) throws ExpiredJwtException, IllegalArgumentException {
 		try {
 			SecretKey key = getSecretKeyByType(type);
 			return Jwts.parser().verifyWith(key).build().parseSignedClaims(token);
@@ -100,6 +100,7 @@ public class TokenProvider {
 			log.error("유효하지 않은 JWT입니다.");
 		} catch (ExpiredJwtException e) {
 			log.error("만료된 JWT입니다.");
+			throw e;
 		} catch (UnsupportedJwtException e) {
 			log.error("지원되지 않는 JWT입니다.");
 		} catch (IllegalArgumentException e) {
