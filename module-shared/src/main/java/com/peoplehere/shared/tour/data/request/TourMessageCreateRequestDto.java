@@ -6,9 +6,9 @@ import jakarta.validation.constraints.NotBlank;
 
 public record TourMessageCreateRequestDto(long tourId, long receiverId, @NotBlank String message) {
 
-	public static TourMessage toTourMessageEntity(TourMessageCreateRequestDto requestDto, long senderId) {
+	public static TourMessage toTourMessageEntity(TourMessageCreateRequestDto requestDto, long tourId, long senderId) {
 		return TourMessage.builder()
-			.tourId(requestDto.tourId)
+			.tourRoomId(tourId)
 			.senderId(senderId)
 			.receiverId(requestDto.receiverId)
 			.message(requestDto.message)

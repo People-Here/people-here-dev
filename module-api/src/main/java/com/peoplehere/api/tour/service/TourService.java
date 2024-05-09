@@ -2,6 +2,7 @@ package com.peoplehere.api.tour.service;
 
 import static com.peoplehere.shared.tour.data.request.TourCreateRequestDto.*;
 import static com.peoplehere.shared.tour.data.request.TourInfoTranslateRequestDto.*;
+import static com.peoplehere.shared.tour.data.request.TourMessageCreateRequestDto.*;
 import static java.util.stream.Collectors.*;
 
 import java.util.List;
@@ -28,13 +29,14 @@ import com.peoplehere.shared.tour.entity.Tour;
 import com.peoplehere.shared.tour.entity.TourImage;
 import com.peoplehere.shared.tour.entity.TourInfo;
 import com.peoplehere.shared.tour.entity.TourLike;
-import com.peoplehere.shared.tour.repository.CustomTourMessageRepository;
+import com.peoplehere.shared.tour.entity.TourRoom;
 import com.peoplehere.shared.tour.repository.CustomTourRepository;
 import com.peoplehere.shared.tour.repository.TourImageRepository;
 import com.peoplehere.shared.tour.repository.TourInfoRepository;
 import com.peoplehere.shared.tour.repository.TourLikeRepository;
 import com.peoplehere.shared.tour.repository.TourMessageRepository;
 import com.peoplehere.shared.tour.repository.TourRepository;
+import com.peoplehere.shared.tour.repository.TourRoomRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -50,7 +52,7 @@ public class TourService {
 	private final TourInfoRepository tourInfoRepository;
 	private final TourLikeRepository tourLikeRepository;
 	private final TourMessageRepository tourMessageRepository;
-	private final CustomTourMessageRepository customTourMessageRepository;
+	private final TourRoomRepository tourRoomRepository;
 	private final CustomTourRepository customTourRepository;
 	private final AccountRepository accountRepository;
 	private final FileService fileService;
@@ -254,7 +256,7 @@ public class TourService {
 	 * @throws IllegalArgumentException 요청 정보가 잘못된 경우
 	 */
 	@Transactional
-	public void createMessage(String senderName, TourMessageCreateRequestDto requestDto) throws
+	public void createTourMessage(String senderName, TourMessageCreateRequestDto requestDto) throws
 		EntityNotFoundException, IllegalArgumentException {
 		try {
 			// 1. sender와 receiver가 존재하는지 확인
@@ -272,23 +274,14 @@ public class TourService {
 				throw new IllegalArgumentException("자기 자신에게 쪽지를 보낼 수 없습니다.");
 			}
 
+			// 2. 투어 메시지 보낼 수 있는지 확인
 			Tour tour = tourRepository.findByIdAndDirectMessageStatus(requestDto.tourId(), true)
 				.orElseThrow(
 					() -> new IllegalArgumentException("쪽지를 보낼수없는 투어 정보: [%s]입니다".formatted(requestDto.tourId())));
 
-			if (!List.of(senderId, receiverId).contains(tour.getAccountId())) {
-				throw new IllegalArgumentException(
-					"쪽지를 보낼수없는 투어 정보 - 요청 정보: [%s], 투어 생성 유저: [%s]".formatted(requestDto, tour.getAccountId()));
-			}
+			TourRoom tourRoom = getTourRoom(senderId, receiverId, tour);
 
-			if (!customTourMessageRepository.existsTourMessage(tour.getId(), senderId, receiverId)) {
-				if (tour.getAccountId() == senderId) {
-					throw new IllegalArgumentException("투어의 주인은 쪽지룸을 만들 수 없습니다.");
-				}
-			}
-
-			// 2. 메시지 저장
-			tourMessageRepository.save(TourMessageCreateRequestDto.toTourMessageEntity(requestDto, senderId));
+			tourMessageRepository.save(toTourMessageEntity(requestDto, tourRoom.getId(), senderId));
 
 		} catch (IllegalArgumentException illegalArgumentException) {
 			log.error("쪽지 보내기 실패 - 잘못된 요청 정보", illegalArgumentException);
@@ -304,5 +297,38 @@ public class TourService {
 				"request: [%s], error: [%s]".formatted(requestDto, exception.getMessage()));
 			throw new RuntimeException("쪽지 보내기 중 오류 발생: %s".formatted(requestDto), exception);
 		}
+	}
+
+	/**
+	 * 투어 관련 대화방을 조회
+	 * @param senderId 보내는 사람 id
+	 * @param receiverId 받는 사람 id
+	 * @param tour 투어 정보
+	 * @return
+	 * @throws IllegalArgumentException 투어 주최자 또는 유효하지 않은 사용자가 대화를 시도할 때 예외를 발생시킵니다
+	 */
+	private TourRoom getTourRoom(long senderId, long receiverId, Tour tour) throws IllegalArgumentException {
+		long ownerId = tour.getAccountId();
+		long guestId;
+		long tourId = tour.getId();
+
+		TourRoom tourRoom;
+
+		if (senderId == ownerId) {
+			guestId = receiverId;
+			tourRoom = tourRoomRepository.findByTourIdAndOwnerIdAndGuestId(tourId, ownerId, guestId)
+				.orElseThrow(() -> new IllegalArgumentException("투어 주인은 투어룸을 생성할 수 없습니다"));
+		} else if (receiverId == ownerId) {
+			guestId = senderId;
+			tourRoom = tourRoomRepository.findByTourIdAndOwnerIdAndGuestId(tourId, ownerId, guestId)
+				.orElseGet(() -> tourRoomRepository.save(TourRoom.builder()
+					.tourId(tourId)
+					.ownerId(ownerId)
+					.guestId(guestId)
+					.build()));
+		} else {
+			throw new IllegalArgumentException("투어 주인과 게스트가 아닌 사람은 쪽지를 보낼 수 없습니다");
+		}
+		return tourRoom;
 	}
 }

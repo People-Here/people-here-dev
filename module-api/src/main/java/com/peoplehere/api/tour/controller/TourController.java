@@ -260,13 +260,13 @@ public class TourController {
 	@CheckAbusing
 	@CreateMessageAuthorize
 	@PostMapping("/messages")
-	public ResponseEntity<Object> createMessage(@Validated @RequestBody TourMessageCreateRequestDto requestDto,
+	public ResponseEntity<Object> createTourMessage(@Validated @RequestBody TourMessageCreateRequestDto requestDto,
 		Principal principal, BindingResult bindingResult) throws BindException {
 		if (bindingResult.hasErrors()) {
 			throw new BindException(bindingResult);
 		}
 		try {
-			tourService.createMessage(principal.getName(), requestDto);
+			tourService.createTourMessage(principal.getName(), requestDto);
 			return ResponseEntity.ok().build();
 		} catch (IllegalArgumentException illegalArgumentException) {
 			return ResponseEntity.badRequest().body("쪽지 보내기 실패 - 잘못된 요청 정보");
@@ -287,7 +287,7 @@ public class TourController {
 	@CheckAbusing
 	@CreateMessageAuthorize
 	@PostMapping("/messages/translate")
-	public ResponseEntity<TourMessageTranslateResponseDto> translateMessage(
+	public ResponseEntity<TourMessageTranslateResponseDto> translateTourMessage(
 		@Validated @RequestBody TourMessageTranslateRequestDto requestDto, BindingResult bindingResult)
 		throws BindException {
 		if (bindingResult.hasErrors()) {

@@ -19,34 +19,28 @@ import lombok.ToString;
 
 @Getter
 @ToString
-@Table(name = "tour_message")
+@Table(name = "tour_room")
 @Entity
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class TourMessage extends BaseTimeEntity {
+public class TourRoom extends BaseTimeEntity {
 
 	@Id
 	@Tsid
 	private Long id;
 
 	@NotNull
-	@Column(name = "tour_room_id", nullable = false)
-	private long tourRoomId;
+	@Column(name = "tour_id", nullable = false)
+	private long tourId;
 
 	@NotNull
-	@Comment("송신자 ID")
-	@Column(name = "sender_id", nullable = false)
-	private long senderId;
+	@Comment("Owner ID")
+	@Column(name = "owner_id", nullable = false)
+	private long ownerId;
 
 	@NotNull
-	@Comment("수신자 ID")
-	@Column(name = "receiver_id", nullable = false)
-	private long receiverId;
-
-	@NotNull
-	@Comment("메시지")
-	@Column(nullable = false)
-	private String message;
-
+	@Comment("Guest ID")
+	@Column(name = "guest_id", nullable = false)
+	private long guestId;
 }
