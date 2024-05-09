@@ -17,6 +17,7 @@ import org.springframework.stereotype.Repository;
 
 import com.peoplehere.shared.common.enums.LangCode;
 import com.peoplehere.shared.common.enums.Region;
+import com.peoplehere.shared.profile.data.ProfileInfoDto;
 import com.peoplehere.shared.tour.data.request.TourListRequestDto;
 import com.peoplehere.shared.tour.data.response.TourResponseDto;
 import com.peoplehere.shared.tour.entity.Tour;
@@ -133,7 +134,7 @@ public class CustomTourRepository {
 				placeInfo.address.as("address")
 			).as("placeInfo"),
 			Projections.bean(
-				TourResponseDto.UserInfo.class,
+				ProfileInfoDto.class,
 				account.id.as("accountId"),
 				account.firstName.as("firstName"),
 				account.lastName.as("lastName"),
