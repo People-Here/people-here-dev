@@ -32,6 +32,7 @@ public class CustomAccountRepository {
 		return Optional.ofNullable(queryFactory
 			.select(Projections.bean(ProfileInfoResponseDto.class,
 				account.id.as("id"),
+				account.email.as("email"),
 				account.firstName.as("firstName"),
 				account.lastName.as("lastName"),
 				account.profileImageUrl.as("profileImageUrl"),

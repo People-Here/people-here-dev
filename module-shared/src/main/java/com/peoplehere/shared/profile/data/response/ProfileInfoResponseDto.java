@@ -23,6 +23,7 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProfileInfoResponseDto {
 	private long id;
+	private String email;
 	private String firstName;
 	private String lastName;
 	private String profileImageUrl;
