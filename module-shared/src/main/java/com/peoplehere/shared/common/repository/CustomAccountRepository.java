@@ -1,6 +1,7 @@
 package com.peoplehere.shared.common.repository;
 
 import static com.peoplehere.shared.common.entity.QAccount.*;
+import static com.peoplehere.shared.common.entity.QConsent.*;
 import static com.peoplehere.shared.profile.entity.QAccountInfo.*;
 import static com.peoplehere.shared.tour.entity.QPlace.*;
 import static com.peoplehere.shared.tour.entity.QPlaceInfo.*;
@@ -30,7 +31,8 @@ public class CustomAccountRepository {
 
 	public Optional<ProfileInfoResponseDto> findProfileInfo(Long accountId, Region region, LangCode langCode) {
 		return Optional.ofNullable(queryFactory
-			.select(Projections.bean(ProfileInfoResponseDto.class,
+			.select(Projections.bean(
+				ProfileInfoResponseDto.class,
 				account.id.as("id"),
 				account.email.as("email"),
 				account.firstName.as("firstName"),
@@ -48,9 +50,18 @@ public class CustomAccountRepository {
 				placeInfo.address.as("address"),
 				account.birthDate.as("birthDate"),
 				Expressions.asEnum(langCode).as("langCode"),
-				account.showBirth.as("showBirth")))
+				account.showBirth.as("showBirth"),
+				Projections.bean(
+					ProfileInfoResponseDto.ConsentInfo.class,
+					consent.privacyConsent.as("privacyConsent"),
+					consent.marketingConsent.as("marketingConsent"),
+					consent.messageAlarmConsent.as("messageAlarmConsent"),
+					consent.meetingAlarmConsent.as("meetingAlarmConsent")
+				).as("consentInfo")
+			))
 			.from(account)
 			.leftJoin(accountInfo).on(account.id.eq(accountInfo.accountId))
+			.leftJoin(consent).on(account.id.eq(consent.accountId))
 			.leftJoin(place).on(account.placeId.eq(place.placeId))
 			.leftJoin(placeInfo).on(place.placeId.eq(placeInfo.placeId)
 				.and(placeInfo.langCode.eq(region.getMapLangCode()).or(placeInfo.langCode.isNull())))

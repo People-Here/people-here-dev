@@ -47,6 +47,9 @@ public class ProfileController {
 		} catch (EntityNotFoundException entityNotFoundException) {
 			log.error("해당 계정이 존재하지 않습니다. id: [{}], region: [{}]", accountId, region);
 			return ResponseEntity.notFound().build();
+		} catch (Exception exception) {
+			log.error("프로필 정보 조회 중 오류 발생", exception);
+			return ResponseEntity.internalServerError().build();
 		}
 	}
 

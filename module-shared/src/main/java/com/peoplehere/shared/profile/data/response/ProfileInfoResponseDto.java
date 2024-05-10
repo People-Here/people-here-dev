@@ -42,6 +42,7 @@ public class ProfileInfoResponseDto {
 	private LocalDate birthDate;
 	private LangCode langCode;
 	private boolean showBirth;
+	private ConsentInfo consentInfo;
 
 	public String getProfileImageUrl() {
 		if (StringUtils.hasText(optimizedProfileImageUrl)) {
@@ -55,5 +56,15 @@ public class ProfileInfoResponseDto {
 			return this.birthDate;
 		}
 		return null;
+	}
+
+	@Data
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class ConsentInfo {
+		private boolean privacyConsent;
+		private boolean marketingConsent;
+		private boolean messageAlarmConsent;
+		private boolean meetingAlarmConsent;
 	}
 }
