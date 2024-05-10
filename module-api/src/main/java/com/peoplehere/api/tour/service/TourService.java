@@ -25,12 +25,14 @@ import com.peoplehere.shared.tour.data.request.TourMessageCreateRequestDto;
 import com.peoplehere.shared.tour.data.request.TourUpdateRequestDto;
 import com.peoplehere.shared.tour.data.response.TourListResponseDto;
 import com.peoplehere.shared.tour.data.response.TourResponseDto;
+import com.peoplehere.shared.tour.data.response.TourRoomListResponseDto;
 import com.peoplehere.shared.tour.entity.Tour;
 import com.peoplehere.shared.tour.entity.TourImage;
 import com.peoplehere.shared.tour.entity.TourInfo;
 import com.peoplehere.shared.tour.entity.TourLike;
 import com.peoplehere.shared.tour.entity.TourRoom;
 import com.peoplehere.shared.tour.repository.CustomTourRepository;
+import com.peoplehere.shared.tour.repository.CustomTourRoomRepository;
 import com.peoplehere.shared.tour.repository.TourImageRepository;
 import com.peoplehere.shared.tour.repository.TourInfoRepository;
 import com.peoplehere.shared.tour.repository.TourLikeRepository;
@@ -54,6 +56,7 @@ public class TourService {
 	private final TourMessageRepository tourMessageRepository;
 	private final TourRoomRepository tourRoomRepository;
 	private final CustomTourRepository customTourRepository;
+	private final CustomTourRoomRepository customTourRoomRepository;
 	private final AccountRepository accountRepository;
 	private final FileService fileService;
 	private final AlertWebhook alertWebhook;
@@ -245,6 +248,20 @@ public class TourService {
 
 		tourLike.toggleLike();
 		tourLikeRepository.save(tourLike);
+	}
+
+	/**
+	 * 유저의 투어 룸 목록 조회
+	 * @param userId
+	 * @return
+	 */
+	@Transactional(readOnly = true)
+	public TourRoomListResponseDto findTourRoomList(String userId, LangCode langCode) {
+		long accountId = accountRepository.findByUserId(userId)
+			.map(Account::getId)
+			.orElseThrow(() -> new EntityNotFoundException("해당 유저[%s]를 찾을 수 없습니다.".formatted(userId)));
+
+		return customTourRoomRepository.findTourRoomList(accountId, langCode);
 	}
 
 	/**

@@ -33,6 +33,7 @@ import com.peoplehere.shared.tour.data.request.TourUpdateRequestDto;
 import com.peoplehere.shared.tour.data.response.TourListResponseDto;
 import com.peoplehere.shared.tour.data.response.TourMessageTranslateResponseDto;
 import com.peoplehere.shared.tour.data.response.TourResponseDto;
+import com.peoplehere.shared.tour.data.response.TourRoomListResponseDto;
 
 import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityNotFoundException;
@@ -251,6 +252,19 @@ public class TourController {
 			log.error("투어 좋아요 누르기 id: {} userId: {} 중 오류 발생", requestDto.id(), principal.getName(), e);
 			return ResponseEntity.internalServerError().build();
 		}
+	}
+
+	@CreateMessageAuthorize
+	@GetMapping("/messages/{langCode}")
+	public ResponseEntity<TourRoomListResponseDto> getTourRoomList(Principal principal,
+		@PathVariable LangCode langCode) {
+		try {
+			return ResponseEntity.ok(tourService.findTourRoomList(principal.getName(), langCode));
+		} catch (Exception exception) {
+			log.error("[@{}], 언어정보: {} 투어 메시지 목록 조회 중 오류 발생", principal.getName(), langCode, exception);
+			return ResponseEntity.internalServerError().build();
+		}
+
 	}
 
 	/**
