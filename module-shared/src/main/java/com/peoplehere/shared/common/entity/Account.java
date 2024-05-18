@@ -235,4 +235,8 @@ public class Account extends BaseTimeEntity implements UserDetails {
 		this.userId = requestDto.email();
 		this.email = requestDto.email();
 	}
+
+	public void setActive(boolean active) {
+		this.active = active;
+	}
 }

@@ -82,9 +82,16 @@ public class AccountService {
 	 */
 	@Transactional
 	public AccountResponseDto signIn(SignInRequestDto requestDto) {
+		Account account = accountRepository.findByEmail(requestDto.getEmail())
+			.orElseThrow(() -> new AccountIdNotFoundException(requestDto.getEmail()));
+
+		if (!account.isActive()) {
+			// Reactivate the account
+			account.setActive(true);
+			accountRepository.save(account);
+		}
+
 		Authentication authentication = attemptAuthentication(requestDto);
-		Account account = accountRepository.findByEmail(authentication.getName())
-			.orElseThrow(() -> new AccountIdNotFoundException(authentication.getName()));
 
 		Token token = tokenProvider.generateToken(authentication);
 		redisTaskService.setRefreshToken(token, authentication.getName());
