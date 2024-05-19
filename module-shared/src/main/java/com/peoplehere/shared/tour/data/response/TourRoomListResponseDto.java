@@ -2,6 +2,7 @@ package com.peoplehere.shared.tour.data.response;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.peoplehere.shared.profile.data.ProfileInfoDto;
 
@@ -26,6 +27,8 @@ public class TourRoomListResponseDto {
 	public static class TourRoomResponseDto {
 		private long id;
 		private long tourId;
+		@JsonIgnore
+		private long messageId;
 		private String title;
 		private String lastMessage;
 		private ProfileInfoDto ownerInfo;

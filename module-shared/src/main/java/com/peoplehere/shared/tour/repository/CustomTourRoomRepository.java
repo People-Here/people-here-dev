@@ -50,6 +50,7 @@ public class CustomTourRoomRepository {
 					tourRoom.id.as("id"),
 					tour.id.as("tourId"),
 					tourInfo.title.as("title"),
+					tourMessage.id.as("messageId"),
 					tourMessage.message.as("lastMessage"),
 					Projections.constructor(
 						ProfileInfoDto.class,
