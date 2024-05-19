@@ -72,7 +72,7 @@ public class WebSecurityConfig {
 					})
 
 					.requestMatchers("/api/account/alarm", "/api/user", "/api/tours", "/api/tours/message",
-						"/api/places/search-history")
+						"/api/places/search-history", "/api/tours/like/**")
 					.authenticated()
 
 					.requestMatchers(HttpMethod.DELETE, "/api/account/{accountId}").authenticated()
