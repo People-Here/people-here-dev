@@ -24,6 +24,7 @@ import com.peoplehere.shared.tour.data.request.TourListRequestDto;
 import com.peoplehere.shared.tour.data.request.TourMessageCreateRequestDto;
 import com.peoplehere.shared.tour.data.request.TourUpdateRequestDto;
 import com.peoplehere.shared.tour.data.response.TourListResponseDto;
+import com.peoplehere.shared.tour.data.response.TourMessageListResponseDto;
 import com.peoplehere.shared.tour.data.response.TourResponseDto;
 import com.peoplehere.shared.tour.data.response.TourRoomListResponseDto;
 import com.peoplehere.shared.tour.entity.Tour;
@@ -261,7 +262,21 @@ public class TourService {
 			.map(Account::getId)
 			.orElseThrow(() -> new EntityNotFoundException("해당 유저[%s]를 찾을 수 없습니다.".formatted(userId)));
 
-		return customTourRoomRepository.findTourRoomList(accountId, langCode);
+		return customTourRoomRepository.findTourRoomList(accountId, langCode).orElse(null);
+	}
+
+	/**
+	 * 유저의 투어 메시지 상세 조회
+	 * @param userId
+	 * @return
+	 */
+	@Transactional(readOnly = true)
+	public TourMessageListResponseDto findTourMessageList(String userId, long tourRoomId, LangCode langCode) {
+		long accountId = accountRepository.findByUserId(userId)
+			.map(Account::getId)
+			.orElseThrow(() -> new EntityNotFoundException("해당 유저[%s]를 찾을 수 없습니다.".formatted(userId)));
+
+		return customTourRoomRepository.findTourMessageList(accountId, tourRoomId, langCode).orElse(null);
 	}
 
 	/**

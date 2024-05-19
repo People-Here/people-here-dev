@@ -31,6 +31,7 @@ import com.peoplehere.shared.tour.data.request.TourMessageCreateRequestDto;
 import com.peoplehere.shared.tour.data.request.TourMessageTranslateRequestDto;
 import com.peoplehere.shared.tour.data.request.TourUpdateRequestDto;
 import com.peoplehere.shared.tour.data.response.TourListResponseDto;
+import com.peoplehere.shared.tour.data.response.TourMessageListResponseDto;
 import com.peoplehere.shared.tour.data.response.TourMessageTranslateResponseDto;
 import com.peoplehere.shared.tour.data.response.TourResponseDto;
 import com.peoplehere.shared.tour.data.response.TourRoomListResponseDto;
@@ -262,6 +263,20 @@ public class TourController {
 			return ResponseEntity.ok(tourService.findTourRoomList(principal.getName(), langCode));
 		} catch (Exception exception) {
 			log.error("[@{}], 언어정보: {} 투어 메시지 목록 조회 중 오류 발생", principal.getName(), langCode, exception);
+			return ResponseEntity.internalServerError().build();
+		}
+
+	}
+
+	@CreateMessageAuthorize
+	@GetMapping("/messages/{tourRoomId}/{langCode}")
+	public ResponseEntity<TourMessageListResponseDto> getTourMessageList(Principal principal,
+		@PathVariable long tourRoomId,
+		@PathVariable LangCode langCode) {
+		try {
+			return ResponseEntity.ok(tourService.findTourMessageList(principal.getName(), tourRoomId, langCode));
+		} catch (Exception exception) {
+			log.error("[@{}], 언어정보: {} 투어 메시지 상세 조회 중 오류 발생", principal.getName(), langCode, exception);
 			return ResponseEntity.internalServerError().build();
 		}
 
