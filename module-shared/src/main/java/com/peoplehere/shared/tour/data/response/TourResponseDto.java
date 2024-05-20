@@ -44,6 +44,8 @@ public class TourResponseDto {
 		private List<PlaceImageInfo> imageUrlList;
 		private String district;
 		private String address;
+		private Double latitude;
+		private Double longitude;
 
 		public List<PlaceImageInfo> getImageUrlList() {
 			if (Boolean.TRUE.equals(isDefaultImage)) {

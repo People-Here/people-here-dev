@@ -131,7 +131,9 @@ public class CustomTourRepository {
 					tourImage.optimizedThumbnailUrl.as("optimizedPlaceImageUrl")
 				).skipNulls()).as("imageUrlList"),
 				placeInfo.district.as("district"),
-				placeInfo.address.as("address")
+				placeInfo.address.as("address"),
+				place.latitude.as("latitude"),
+				place.longitude.as("longitude")
 			).as("placeInfo"),
 			Projections.bean(
 				ProfileInfoDto.class,
