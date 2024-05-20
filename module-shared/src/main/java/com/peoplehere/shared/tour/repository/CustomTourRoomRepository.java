@@ -153,7 +153,8 @@ public class CustomTourRoomRepository {
 				ownerAccountInfo.introduce,
 				ownerAccount.profileImageUrl,
 				ownerAccount.optimizedProfileImageUrl,
-				ownerAccount.directMessageStatus
+				ownerAccount.directMessageStatus,
+				ownerAccount.langCodeList
 			).as("ownerInfo"),
 			Projections.constructor(
 				ProfileInfoDto.class,
@@ -163,7 +164,8 @@ public class CustomTourRoomRepository {
 				guestAccountInfo.introduce,
 				guestAccount.profileImageUrl,
 				guestAccount.optimizedProfileImageUrl,
-				guestAccount.directMessageStatus
+				guestAccount.directMessageStatus,
+				guestAccount.langCodeList
 			).as("guestInfo"),
 			GroupBy.list(Projections.bean(
 				TourMessageListResponseDto.MessageInfo.class,
