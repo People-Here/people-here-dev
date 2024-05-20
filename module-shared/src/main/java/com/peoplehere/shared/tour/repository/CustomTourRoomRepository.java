@@ -167,6 +167,7 @@ public class CustomTourRoomRepository {
 			).as("guestInfo"),
 			GroupBy.list(Projections.bean(
 				TourMessageListResponseDto.MessageInfo.class,
+				tourMessage.id.as("messageId"),
 				tourMessage.senderId.as("senderId"),
 				tourMessage.receiverId.as("receiverId"),
 				tourMessage.message.as("message"),

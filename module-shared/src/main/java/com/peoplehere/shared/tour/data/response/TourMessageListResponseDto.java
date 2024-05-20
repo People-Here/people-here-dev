@@ -32,6 +32,7 @@ public class TourMessageListResponseDto {
 	@AllArgsConstructor
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public static class MessageInfo {
+		private long messageId;
 		private long senderId;
 		private long receiverId;
 		private String message;
