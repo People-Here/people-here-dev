@@ -115,4 +115,8 @@ public enum Region {
 		return ENGLISH;
 	}
 
+	public String getDialCodeString() {
+		return '+' + String.valueOf(dialCode);
+	}
+
 }
