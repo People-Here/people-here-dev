@@ -11,7 +11,7 @@ import jakarta.validation.constraints.NotNull;
  */
 public record PhoneVerificationRequestDto(@NotNull Region region, @NotBlank String phoneNumber) {
 
-	public String getPhoneNumber() {
-		return region.getDialCodeString() + phoneNumber.substring(1);
+	public String getSendNumber() {
+		return region.getRegionPhoneNumber(phoneNumber);
 	}
 }

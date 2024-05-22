@@ -15,48 +15,48 @@ import lombok.Getter;
 @Getter
 public enum Region {
 	// 북미
-	CA("Canada", "캐나다", 1),
-	US("United States of America", "미국", 1),
+	CA("Canada", "캐나다", "+1"),
+	US("United States of America", "미국", "+1"),
 
 	// 유럽
-	AT("Republic of Austria", "오스트리아", 43),
-	BE("Kingdom of Belgium", "벨기에", 32),
-	CZ("Czech Republic", "체코", 420),
-	DK("Kingdom of Denmark", "덴마크", 45),
-	FI("Republic of Finland", "핀란드", 358),
-	FR("French Republic", "프랑스", 33),
-	DE("Federal Republic of Germany", "독일", 49),
-	IE("Republic of Ireland", "아일랜드", 353),
-	IT("Italian Republic", "이탈리아", 39),
-	NL("Kingdom of the Netherlands", "네덜란드", 31),
-	NO("Kingdom of Norway", "노르웨이", 47),
-	PL("Republic of Poland", "폴란드", 48),
-	PT("Portuguese Republic", "포르투갈", 351),
-	SK("Slovak Republic", "슬로바키아", 421),
-	ES("Kingdom of Spain", "스페인", 34),
-	SE("Kingdom of Sweden", "스웨덴", 46),
-	CH("Swiss Confederation", "스위스", 41),
-	GB("United Kingdom of Great Britain and Northern Ireland", "영국", 44),
+	AT("Republic of Austria", "오스트리아", "+43"),
+	BE("Kingdom of Belgium", "벨기에", "+32"),
+	CZ("Czech Republic", "체코", "+420"),
+	DK("Kingdom of Denmark", "덴마크", "+45"),
+	FI("Republic of Finland", "핀란드", "+358"),
+	FR("French Republic", "프랑스", "+33"),
+	DE("Federal Republic of Germany", "독일", "+49"),
+	IE("Republic of Ireland", "아일랜드", "+353"),
+	IT("Italian Republic", "이탈리아", "+39"),
+	NL("Kingdom of the Netherlands", "네덜란드", "+31"),
+	NO("Kingdom of Norway", "노르웨이", "+47"),
+	PL("Republic of Poland", "폴란드", "+48"),
+	PT("Portuguese Republic", "포르투갈", "+351"),
+	SK("Slovak Republic", "슬로바키아", "+421"),
+	ES("Kingdom of Spain", "스페인", "+34"),
+	SE("Kingdom of Sweden", "스웨덴", "+46"),
+	CH("Swiss Confederation", "스위스", "+41"),
+	GB("United Kingdom of Great Britain and Northern Ireland", "영국", "+44"),
 
 	// South America
-	AR("Argentine Republic", "아르헨티나", 54),
-	BR("Federative Republic of Brazil", "브라질", 55),
-	CL("Republic of Chile", "칠레", 56),
-	CO("Republic of Colombia", "콜롬비아", 57),
-	PE("Republic of Peru", "페루", 51),
-	VE("Bolivarian Republic of Venezuela", "베네수엘라", 58),
+	AR("Argentine Republic", "아르헨티나", "+54"),
+	BR("Federative Republic of Brazil", "브라질", "+55"),
+	CL("Republic of Chile", "칠레", "+56"),
+	CO("Republic of Colombia", "콜롬비아", "+57"),
+	PE("Republic of Peru", "페루", "+51"),
+	VE("Bolivarian Republic of Venezuela", "베네수엘라", "+58"),
 
 	// 아시아 태평양
-	AU("Commonwealth of Australia", "호주", 61),
-	JP("Japan", "일본", 81),
-	KR("Republic of Korea", "대한민국", 82),
-	RU("Russian Federation", "러시아", 7),
-	TW("Taiwan", "대만", 886),
-	CN("People's Republic of China", "중국", 86);
+	AU("Commonwealth of Australia", "호주", "+61"),
+	JP("Japan", "일본", "+81"),
+	KR("Republic of Korea", "대한민국", "+82"),
+	RU("Russian Federation", "러시아", "+7"),
+	TW("Taiwan", "대만", "+886"),
+	CN("People's Republic of China", "중국", "+86");
 
 	private final String englishName;
 	private final String koreanName;
-	private final int dialCode;
+	private final String dialCode;
 
 	public static final Region[] VALUES = values();
 	public static final List<RegionResponseDto> REGION_INFO_LIST = Stream.of(VALUES)
@@ -68,7 +68,7 @@ public enum Region {
 			.build())
 		.collect(toList());
 
-	Region(String englishName, String koreanName, int dialCode) {
+	Region(String englishName, String koreanName, String dialCode) {
 		this.englishName = englishName;
 		this.koreanName = koreanName;
 		this.dialCode = dialCode;
@@ -115,8 +115,21 @@ public enum Region {
 		return ENGLISH;
 	}
 
-	public String getDialCodeString() {
-		return '+' + String.valueOf(dialCode);
+	/**
+	 * 국가 dialCode 번호를 포함한 전화번호 반환
+	 * @param phoneNumber 전화번호
+	 * @return
+	 */
+	public String getRegionPhoneNumber(String phoneNumber) {
+		return this.dialCode + getNormalizedPhoneNumber(phoneNumber);
+	}
+
+	/**
+	 * 첫 글자가 0이면 0을 제거한 번호를 반환한다. - 지역번호 제거를 위해
+	 * @return
+	 */
+	public static String getNormalizedPhoneNumber(String phoneNumber) {
+		return phoneNumber.startsWith("0") ? phoneNumber.substring(1) : phoneNumber;
 	}
 
 }

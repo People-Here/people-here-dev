@@ -234,8 +234,9 @@ public class AccountController {
 			throw new ClientBindException(result);
 		}
 		long start = System.currentTimeMillis();
-		PhoneVerificationResponseDto responseDto = verifyService.sendPhoneVerificationCode(requestDto.phoneNumber());
-		log.info("전화번호 인증번호 전송 성공 - {}ms, phoneNum: {}", System.currentTimeMillis() - start, requestDto.phoneNumber());
+		PhoneVerificationResponseDto responseDto = verifyService.sendPhoneVerificationCode(requestDto.getSendNumber());
+		log.info("전화번호 인증번호 전송 성공 - {}ms, phoneNum: {}", System.currentTimeMillis() - start,
+			requestDto.getSendNumber());
 		return ResponseEntity.ok().body(responseDto);
 	}
 
