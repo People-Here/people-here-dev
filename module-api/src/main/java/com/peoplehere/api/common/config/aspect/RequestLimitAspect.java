@@ -16,6 +16,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.peoplehere.api.common.data.request.MailVerifyRequestDto;
+import com.peoplehere.api.common.data.request.PhoneVerifyRequestDto;
 import com.peoplehere.api.common.exception.RequestLimitException;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -58,6 +59,33 @@ public class RequestLimitAspect {
 				String email = dto.email();
 				String countKey = generateEmailVerifyRequestCountKey(stage, email);
 				processRequestLimit(countKey, getEmailVerifyTimeLimitDay(), getEmailVerifyCountLimit());
+			}
+		}
+	}
+
+	/**
+	 * 전화번호 인증 번호 전송에 대한 제한을 체크하는 Aspect
+	 * @param joinPoint
+	 *
+	 */
+	@Before("@annotation(com.peoplehere.api.common.annotation.CheckPhoneVerificationLimit)")
+	public void checkPhoneVerificationLimit(JoinPoint joinPoint) {
+		HttpServletRequest request = getRequest();
+		String countKey = generatePhoneVerificationRequestCountKey(stage, getRequestKey(request));
+		processRequestLimit(countKey, getPhoneVerificationTimeLimitDay(), getPhoneVerificationCountLimit());
+	}
+
+	/**
+	 * 전화번호 인증 번호 검증에 대한 제한을 체크하는 Aspect
+	 * @param joinPoint
+	 */
+	@Before("@annotation(com.peoplehere.api.common.annotation.CheckPhoneVerifyLimit)")
+	public void checkPhoneVerifyLimit(JoinPoint joinPoint) {
+		var args = joinPoint.getArgs();
+		for (var arg : args) {
+			if (arg instanceof PhoneVerifyRequestDto dto) {
+				String countKey = generatePhoneVerifyRequestCountKey(stage, dto.phoneNumber());
+				processRequestLimit(countKey, getPhoneVerifyTimeLimitDay(), getPhoneVerifyCountLimit());
 			}
 		}
 	}

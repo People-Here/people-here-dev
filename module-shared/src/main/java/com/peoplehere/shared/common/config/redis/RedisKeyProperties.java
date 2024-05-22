@@ -27,6 +27,16 @@ public class RedisKeyProperties {
 	}
 
 	/**
+	 * 전화번호 인증 코드 저장을 위한 key 생성
+	 * @param prefix
+	 * @param phoneNumber
+	 * @return
+	 */
+	public static String generatePhoneVerifyCodeKey(String prefix, String phoneNumber) {
+		return "%s:spring:phone:verify:code:%s".formatted(prefix, phoneNumber);
+	}
+
+	/**
 	 * 사용자의 abusing check를 위한 key 생성
 	 * @param prefix
 	 * @param requestUri
@@ -55,6 +65,26 @@ public class RedisKeyProperties {
 	 */
 	public static String generateEmailVerifyRequestCountKey(String prefix, String email) {
 		return String.format("%s:spring:email:verify:request:%s", prefix, email);
+	}
+
+	/**
+	 * 사용자의 전화번호 인증 번호 전송 횟수를 체크하기 위한 key 생성
+	 * @param prefix
+	 * @param key
+	 * @return
+	 */
+	public static String generatePhoneVerificationRequestCountKey(String prefix, String key) {
+		return String.format("%s:spring:phone:verification:request:%s", prefix, key);
+	}
+
+	/**
+	 * 사용자의 전화번호 인증 번호 검증 횟수를 체크하기 위한 key 생성
+	 * @param prefix
+	 * @param phoneNum
+	 * @return
+	 */
+	public static String generatePhoneVerifyRequestCountKey(String prefix, String phoneNum) {
+		return String.format("%s:spring:phone:verify:request:%s", prefix, phoneNum);
 	}
 
 	/**

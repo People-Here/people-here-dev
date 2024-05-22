@@ -22,10 +22,14 @@ import org.springframework.web.bind.annotation.RestController;
 import com.peoplehere.api.common.annotation.CheckAbusing;
 import com.peoplehere.api.common.annotation.CheckEmailVerificationLimit;
 import com.peoplehere.api.common.annotation.CheckEmailVerifyLimit;
+import com.peoplehere.api.common.annotation.CheckPhoneVerificationLimit;
 import com.peoplehere.api.common.config.authorize.UpdateProfileAuthorize;
 import com.peoplehere.api.common.data.request.MailVerificationRequestDto;
 import com.peoplehere.api.common.data.request.MailVerifyRequestDto;
+import com.peoplehere.api.common.data.request.PhoneVerificationRequestDto;
+import com.peoplehere.api.common.data.request.PhoneVerifyRequestDto;
 import com.peoplehere.api.common.data.response.MailVerificationResponseDto;
+import com.peoplehere.api.common.data.response.PhoneVerificationResponseDto;
 import com.peoplehere.api.common.exception.ClientBindException;
 import com.peoplehere.api.common.exception.DuplicateException;
 import com.peoplehere.api.common.service.AccountService;
@@ -211,6 +215,39 @@ public class AccountController {
 	@PostMapping("/email/verify")
 	public ResponseEntity<Boolean> checkEmailVerifyCode(@Validated @RequestBody MailVerifyRequestDto requestDto) {
 		return ResponseEntity.ok().body(verifyService.checkEmailVerifyCode(requestDto));
+	}
+
+	/**
+	 * 전화번호 인증 번호 요청
+	 * @param requestDto 전화번호
+	 * @param result
+	 * @return 인증번호 만료시간
+	 * @throws ClientBindException
+	 */
+	@CheckAbusing
+	@CheckPhoneVerificationLimit
+	@PostMapping("/phone/verification")
+	public ResponseEntity<PhoneVerificationResponseDto> sendPhoneVerificationCode(
+		@Validated @RequestBody PhoneVerificationRequestDto requestDto,
+		BindingResult result) throws ClientBindException {
+		if (result.hasErrors()) {
+			throw new ClientBindException(result);
+		}
+		long start = System.currentTimeMillis();
+		PhoneVerificationResponseDto responseDto = verifyService.sendPhoneVerificationCode(requestDto.phoneNumber());
+		log.info("전화번호 인증번호 전송 성공 - {}ms, phoneNum: {}", System.currentTimeMillis() - start, requestDto.phoneNumber());
+		return ResponseEntity.ok().body(responseDto);
+	}
+
+	/**
+	 * 전화번호 인증 번호 검증
+	 * @param requestDto 전화번호, 인증번호
+	 * @return
+	 */
+	@CheckEmailVerifyLimit
+	@PostMapping("/phone/verify")
+	public ResponseEntity<Boolean> checkPhoneVerifyCode(@Validated @RequestBody PhoneVerifyRequestDto requestDto) {
+		return ResponseEntity.ok().body(verifyService.checkPhoneVerifyCode(requestDto));
 	}
 
 	@DeleteMapping("/{accountId}")

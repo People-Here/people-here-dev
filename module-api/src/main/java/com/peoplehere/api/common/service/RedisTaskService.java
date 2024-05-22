@@ -17,6 +17,7 @@ import com.peoplehere.api.common.config.security.Token;
 import com.peoplehere.api.common.config.security.TokenProperties;
 import com.peoplehere.api.common.config.security.VerifyCodeProperties;
 import com.peoplehere.api.common.data.response.MailVerificationResponseDto;
+import com.peoplehere.api.common.data.response.PhoneVerificationResponseDto;
 import com.peoplehere.shared.common.webhook.AlertWebhook;
 import com.peoplehere.shared.tour.data.response.PlaceInfoHistoryResponseDto;
 import com.peoplehere.shared.tour.data.response.PlaceInfoResponseDto;
@@ -74,6 +75,34 @@ public class RedisTaskService {
 		if (isMatch) {
 			redisTemplate.unlink(key);
 			log.debug("email verify code 삭제 성공 - email: {}", email);
+		}
+		return isMatch;
+	}
+
+	/**
+	 * 전화번호 인증 코드 레디스에 저장
+	 * @param phoneNumber 전화번호
+	 * @param code 랜덤 인증 코드
+	 */
+	public PhoneVerificationResponseDto setPhoneVerifyCode(String phoneNumber, String code) {
+		String key = generatePhoneVerifyCodeKey(stage, phoneNumber);
+		redisTemplate.opsForValue()
+			.set(key, code, verifyCodeProperties.getPhoneTimeout(), TimeUnit.SECONDS);
+		log.debug("전화번호 verify code 저장 성공 - phoneNumber: {}", phoneNumber);
+		return new PhoneVerificationResponseDto(verifyCodeProperties.getPhoneTimeout());
+	}
+
+	/**
+	 * 전화번호 인증 코드 레디스에 있는지 확인
+	 * @param phoneNumber 전화번호
+	 * @return 인증 코드
+	 */
+	public boolean checkPhoneVerifyCode(String phoneNumber, String code) {
+		String key = generatePhoneVerifyCodeKey(stage, phoneNumber);
+		boolean isMatch = checkValueMatch(key, code);
+		if (isMatch) {
+			redisTemplate.unlink(key);
+			log.debug("전화번호 verify code 삭제 성공 - phoneNumber: {}", phoneNumber);
 		}
 		return isMatch;
 	}
