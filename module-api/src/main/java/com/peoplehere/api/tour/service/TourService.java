@@ -139,28 +139,12 @@ public class TourService {
 				.orElseThrow(() -> new EntityNotFoundException("해당 투어[%s]를 찾을 수 없습니다.".formatted(requestDto.id())));
 
 			tour.updateInfo(requestDto);
-
-			// 2. 이미지 업로드 및 투어 이미지 새로 저장 - 기본 이미지 사용 x && 이미지가 존재하는 경우
-			if (!requestDto.isDefaultImage() && !CollectionUtils.isEmpty(requestDto.images())) {
-				tourImageRepository.deleteAllByTourId(tour.getId());
-
-				List<String> tourImageUrlList = fileService.uploadFileListAndGetFileInfoList(tour.getId(),
-					requestDto.images());
-
-				List<TourImage> tourImageList = tourImageUrlList
-					.stream()
-					.map(url -> TourImage.builder()
-						.tourId(tour.getId())
-						.thumbnailUrl(url)
-						.build())
-					.collect(toList());
-
-				tourImageRepository.saveAll(tourImageList);
-			}
+			updateTourImage(requestDto);
 
 			// 3. 투어 정보 수정
 			TourInfo tourInfo = tourInfoRepository.findByTourIdAndLangCode(tour.getId(), LangCode.ORIGIN)
 				.orElseThrow(() -> new EntityNotFoundException("해당 투어[%s]의 정보를 찾을 수 없습니다.".formatted(tour.getId())));
+			tourInfo.updateInfo(requestDto);
 
 			// 4. 이벤트 발행
 			eventPublisher.publishEvent(new TourInfoTranslatedEvent(toTranslateRequestDto(tour, tourInfo)));
@@ -169,6 +153,30 @@ public class TourService {
 			alertWebhook.alertError("투어 수정 중 오류 발생",
 				"request: [%s], error: [%s]".formatted(requestDto, exception.getMessage()));
 			throw new RuntimeException("투어 수정 중 오류 발생: %s".formatted(requestDto), exception);
+		}
+	}
+
+	/**
+	 * 이미지 업로드 및 투어 이미지 새로 저장 - 기본 이미지 사용 x && 이미지가 존재하는 경우
+	 * @param requestDto 투어 수정 요청 DTO
+	 */
+	private void updateTourImage(TourUpdateRequestDto requestDto) {
+		long tourId = requestDto.id();
+		if (!requestDto.isDefaultImage() && !CollectionUtils.isEmpty(requestDto.images())) {
+			tourImageRepository.deleteAllByTourId(tourId);
+
+			List<String> tourImageUrlList = fileService.uploadFileListAndGetFileInfoList(tourId,
+				requestDto.images());
+
+			List<TourImage> tourImageList = tourImageUrlList
+				.stream()
+				.map(url -> TourImage.builder()
+					.tourId(tourId)
+					.thumbnailUrl(url)
+					.build())
+				.collect(toList());
+
+			tourImageRepository.saveAll(tourImageList);
 		}
 	}
 

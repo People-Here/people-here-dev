@@ -2,8 +2,10 @@ package com.peoplehere.api.common.config.security;
 
 import static com.peoplehere.api.common.util.RequestUtils.*;
 import static org.springframework.http.HttpHeaders.*;
+import static org.springframework.util.MimeTypeUtils.*;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
@@ -49,6 +51,8 @@ public class AuthorizationFilter extends OncePerRequestFilter {
 		} catch (ExpiredJwtException expiredJwtException) {
 			log.debug("만료된 토큰, ip: {}, uri: {}", ip, uri);
 			response.setStatus(HttpStatus.FORBIDDEN.value());
+			response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+			response.setContentType(APPLICATION_JSON_VALUE);
 			return;
 		} catch (Exception e) {
 			log.debug("인가 처리 실패 기록 : ip: {}, uri: {} - {}", ip, uri, e.getMessage());
