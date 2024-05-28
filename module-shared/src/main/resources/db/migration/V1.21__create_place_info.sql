@@ -14,13 +14,13 @@ CREATE TABLE place_info
     updated_at     TIMESTAMP NOT NULL default NOW() -- 수정일
 );
 
--- place 테이블의 동일 컬럼 정보를 place_info 테이블로 이동
+-- location 테이블의 동일 컬럼 정보를 place_info 테이블로 이동
 INSERT INTO place_info (place_id, language, name, address, country, city, district, street_address)
 SELECT place_id, 'KOREAN' AS language, name, address, country, city, district, street_address
-FROM place;
+FROM location;
 
--- place 테이블의 동일 컬럼 삭제
-ALTER TABLE place
+-- location 테이블의 동일 컬럼 삭제
+ALTER TABLE location
 DROP
 COLUMN name,
 DROP

@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.peoplehere.api.common.annotation.CheckAbusing;
-import com.peoplehere.api.tour.service.MapService;
+import com.peoplehere.api.tour.service.LocationService;
 import com.peoplehere.shared.common.enums.Region;
 import com.peoplehere.shared.tour.data.request.PlaceInfoRequestDto;
 import com.peoplehere.shared.tour.data.response.PlaceInfoHistoryResponseDto;
@@ -33,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 @Validated
 public class PlaceController {
 
-	private final MapService mapService;
+	private final LocationService locationService;
 
 	/**
 	 * 장소명으로 관련 장소 목록 조회
@@ -46,7 +46,7 @@ public class PlaceController {
 		@RequestParam(name = "region", defaultValue = "KR") Region region) {
 		try {
 			long start = System.currentTimeMillis();
-			PlaceInfoListResponseDto responseDto = mapService.getPlaceInfoList(name, region);
+			PlaceInfoListResponseDto responseDto = locationService.getPlaceInfoList(name, region);
 			log.info("장소 요청 : [{}, {}]으로 관련 장소 목록 조회 처리 시간: {}ms", name, region, System.currentTimeMillis() - start);
 			return ResponseEntity.ok(responseDto);
 		} catch (Exception e) {
@@ -63,7 +63,7 @@ public class PlaceController {
 	 */
 	@CheckAbusing
 	@PostMapping("")
-	public ResponseEntity<PlaceInfoResponseDto> getPlaceDetailInfo(
+	public ResponseEntity<PlaceInfoResponseDto> addPlaceInfo(
 		@RequestBody @Validated PlaceInfoRequestDto requestDto, @Nullable Principal principal,
 		BindingResult bindingResult) throws BindException {
 		if (bindingResult.hasErrors()) {
@@ -71,7 +71,7 @@ public class PlaceController {
 		}
 		try {
 			String userId = principal == null ? null : principal.getName();
-			return ResponseEntity.ok(mapService.getPlaceDetailInfo(userId, requestDto));
+			return ResponseEntity.ok(locationService.addPlaceInfo(userId, requestDto));
 		} catch (Exception e) {
 			log.error("장소 id: {}, region: {} 상세 정보 추가 중 오류 발생", requestDto.placeId(), requestDto.region(), e);
 			return ResponseEntity.internalServerError().build();
@@ -87,7 +87,7 @@ public class PlaceController {
 	@GetMapping("/search-history")
 	public ResponseEntity<PlaceInfoHistoryResponseDto> getSearchPlaceHistory(Principal principal) {
 		try {
-			return ResponseEntity.ok(mapService.getSearchHistory(principal.getName()));
+			return ResponseEntity.ok(locationService.getSearchHistory(principal.getName()));
 		} catch (Exception e) {
 			log.error("장소 검색 기록 조회 중 오류 발생", e);
 			return ResponseEntity.internalServerError().build();

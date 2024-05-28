@@ -45,7 +45,7 @@ public class TourInfoTranslateEventListener {
 	 * 투어 정보 번역 요청 이벤트 수신
 	 * @param event
 	 */
-	@Async("translate")
+	@Async("tour-translate")
 	@Transactional
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void handleTourInfoTranslatedEvent(TourInfoTranslatedEvent event) {

@@ -5,10 +5,10 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.peoplehere.shared.tour.entity.Place;
+import com.peoplehere.shared.tour.entity.Location;
 
 @Repository
-public interface PlaceRepository extends JpaRepository<Place, Long> {
+public interface LocationRepository extends JpaRepository<Location, Long> {
 
-	Optional<Place> findByPlaceId(String placeId);
+	Optional<Location> findByPlaceId(String placeId);
 }

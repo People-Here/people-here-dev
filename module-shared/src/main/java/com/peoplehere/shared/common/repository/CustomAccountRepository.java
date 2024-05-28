@@ -3,8 +3,8 @@ package com.peoplehere.shared.common.repository;
 import static com.peoplehere.shared.common.entity.QAccount.*;
 import static com.peoplehere.shared.common.entity.QConsent.*;
 import static com.peoplehere.shared.profile.entity.QAccountInfo.*;
-import static com.peoplehere.shared.tour.entity.QPlace.*;
-import static com.peoplehere.shared.tour.entity.QPlaceInfo.*;
+import static com.peoplehere.shared.tour.entity.QLocation.*;
+import static com.peoplehere.shared.tour.entity.QLocationInfo.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -47,7 +47,7 @@ public class CustomAccountRepository {
 				accountInfo.introduce.as("introduce"),
 				accountInfo.job.as("job"),
 				accountInfo.school.as("school"),
-				placeInfo.address.as("address"),
+				locationInfo.address.as("address"),
 				account.birthDate.as("birthDate"),
 				Expressions.asEnum(langCode).as("langCode"),
 				account.showBirth.as("showBirth"),
@@ -62,9 +62,9 @@ public class CustomAccountRepository {
 			.from(account)
 			.leftJoin(accountInfo).on(account.id.eq(accountInfo.accountId))
 			.leftJoin(consent).on(account.id.eq(consent.accountId))
-			.leftJoin(place).on(account.placeId.eq(place.placeId))
-			.leftJoin(placeInfo).on(place.placeId.eq(placeInfo.placeId)
-				.and(placeInfo.langCode.eq(region.getMapLangCode()).or(placeInfo.langCode.isNull())))
+			.leftJoin(location).on(account.placeId.eq(location.placeId))
+			.leftJoin(locationInfo).on(location.placeId.eq(locationInfo.placeId)
+				.and(locationInfo.langCode.eq(region.getMapLangCode()).or(locationInfo.langCode.isNull())))
 			.where(account.id.eq(accountId)
 				.and(accountInfo.langCode.eq(langCode)))
 			.fetchOne());

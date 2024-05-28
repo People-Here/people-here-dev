@@ -2,8 +2,8 @@ package com.peoplehere.shared.tour.repository;
 
 import static com.peoplehere.shared.common.entity.QAccount.*;
 import static com.peoplehere.shared.profile.entity.QAccountInfo.*;
-import static com.peoplehere.shared.tour.entity.QPlace.*;
-import static com.peoplehere.shared.tour.entity.QPlaceInfo.*;
+import static com.peoplehere.shared.tour.entity.QLocation.*;
+import static com.peoplehere.shared.tour.entity.QLocationInfo.*;
 import static com.peoplehere.shared.tour.entity.QTour.*;
 import static com.peoplehere.shared.tour.entity.QTourImage.*;
 import static com.peoplehere.shared.tour.entity.QTourInfo.*;
@@ -51,8 +51,8 @@ public class CustomTourRepository {
 	public List<TourResponseDto> findTourListByKeyword(Long accountId, TourListRequestDto requestDto) {
 		BooleanExpression langCodeCondition = tourInfo.langCode.eq(requestDto.langCode())
 			.and(accountInfo.langCode.eq(requestDto.langCode()));
-		BooleanExpression searchCondition = ((placeInfo.name.contains(requestDto.keyword())).or(
-			placeInfo.address.contains(requestDto.keyword())));
+		BooleanExpression searchCondition = ((locationInfo.name.contains(requestDto.keyword())).or(
+			locationInfo.address.contains(requestDto.keyword())));
 
 		return findTourWithJoinData(accountId, requestDto.region())
 			.where(langCodeCondition.and(searchCondition))
@@ -99,9 +99,9 @@ public class CustomTourRepository {
 			.leftJoin(tourInfo).on(tour.id.eq(tourInfo.tourId))
 			.leftJoin(account).on(tour.accountId.eq(account.id))
 			.leftJoin(accountInfo).on(account.id.eq(accountInfo.accountId))
-			.leftJoin(place).on(tour.placeId.eq(place.placeId))
-			.leftJoin(placeInfo).on(place.placeId.eq(placeInfo.placeId)
-				.and(placeInfo.langCode.eq(region.getMapLangCode()).or(placeInfo.langCode.isNull())))
+			.leftJoin(location).on(tour.placeId.eq(location.placeId))
+			.leftJoin(locationInfo).on(location.placeId.eq(locationInfo.placeId)
+				.and(locationInfo.langCode.eq(region.getMapLangCode()).or(locationInfo.langCode.isNull())))
 			.leftJoin(tourImage).on(tour.id.eq(tourImage.tourId))
 			.leftJoin(tourLike).on(tour.id.eq(tourLike.tourId).and(likeCondition))
 			.orderBy(tour.id.desc())
@@ -122,18 +122,18 @@ public class CustomTourRepository {
 			tour.theme.as("theme"),
 			Projections.bean(
 				TourResponseDto.PlaceInfo.class,
-				place.placeId.as("placeId"),
-				placeInfo.name.as("name"),
+				location.placeId.as("placeId"),
+				locationInfo.name.as("name"),
 				tour.isDefaultImage.as("isDefaultImage"),
 				GroupBy.list(Projections.bean(
 					TourResponseDto.PlaceImageInfo.class,
 					tourImage.thumbnailUrl.as("placeImageUrl"),
 					tourImage.optimizedThumbnailUrl.as("optimizedPlaceImageUrl")
 				).skipNulls()).as("imageUrlList"),
-				placeInfo.district.as("district"),
-				placeInfo.address.as("address"),
-				place.latitude.as("latitude"),
-				place.longitude.as("longitude")
+				locationInfo.district.as("district"),
+				locationInfo.address.as("address"),
+				location.latitude.as("latitude"),
+				location.longitude.as("longitude")
 			).as("placeInfo"),
 			Projections.bean(
 				ProfileInfoDto.class,

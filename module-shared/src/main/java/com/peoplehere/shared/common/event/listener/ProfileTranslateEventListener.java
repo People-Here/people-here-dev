@@ -46,7 +46,7 @@ public class ProfileTranslateEventListener {
 	 * 프로필 번역 요청 이벤트 수신
 	 * @param event
 	 */
-	@Async("translate")
+	@Async("profile-translate")
 	@Transactional
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void handleProfileTranslatedEvent(ProfileTranslatedEvent event) {

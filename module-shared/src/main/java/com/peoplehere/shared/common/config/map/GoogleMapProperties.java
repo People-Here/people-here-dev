@@ -1,4 +1,4 @@
-package com.peoplehere.api.tour.config;
+package com.peoplehere.shared.common.config.map;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
