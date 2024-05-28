@@ -37,6 +37,7 @@ public class CustomAccountRepository {
 				account.email.as("email"),
 				account.firstName.as("firstName"),
 				account.lastName.as("lastName"),
+				account.phoneNumber.as("phoneNumber"),
 				account.profileImageUrl.as("profileImageUrl"),
 				account.optimizedProfileImageUrl.as("optimizedProfileImageUrl"),
 				account.region.as("region"),

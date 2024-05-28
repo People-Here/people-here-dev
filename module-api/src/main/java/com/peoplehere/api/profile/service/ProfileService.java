@@ -40,20 +40,26 @@ public class ProfileService {
 	 * 프로필 정보 조회
 	 * 기기 OS 언어에 따라서 한국인 경우 원문 반환, 그 외의 나라의 경우 영어로 번역된 정보 반환
 	 * 영어 반환시 정보 없는경우 원문 반환
+	 * @param userId 사용자 id
 	 * @param accountId pk
 	 * @param region 지역 정보
 	 * @return
 	 */
 	@Transactional(readOnly = true)
-	public ProfileInfoResponseDto getProfileInfo(Long accountId, Region region) throws EntityNotFoundException {
+	public ProfileInfoResponseDto getProfileInfo(String userId, Long accountId, Region region) throws
+		EntityNotFoundException {
 		LangCode langCode = region.getLangCode();
+		ProfileInfoResponseDto dto;
 		if (ORIGIN.equals(langCode)) {
-			return customAccountRepository.findProfileInfo(accountId, region, langCode)
+			dto = customAccountRepository.findProfileInfo(accountId, region, langCode)
 				.orElseThrow(() -> new EntityNotFoundException("해당 계정이 존재하지 않습니다. id: %s".formatted(accountId)));
+		} else {
+			dto = customAccountRepository.findProfileInfo(accountId, region, langCode).orElseGet(
+				() -> customAccountRepository.findProfileInfo(accountId, region, ORIGIN)
+					.orElseThrow(() -> new EntityNotFoundException("해당 계정이 존재하지 않습니다. id: %s".formatted(accountId))));
 		}
-		return customAccountRepository.findProfileInfo(accountId, region, langCode).orElseGet(
-			() -> customAccountRepository.findProfileInfo(accountId, region, ORIGIN)
-				.orElseThrow(() -> new EntityNotFoundException("해당 계정이 존재하지 않습니다. id: %s".formatted(accountId))));
+
+		return dto.filterBirthDate(userId);
 	}
 
 	/**

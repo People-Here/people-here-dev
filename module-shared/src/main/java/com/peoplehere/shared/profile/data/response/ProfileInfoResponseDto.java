@@ -2,6 +2,7 @@ package com.peoplehere.shared.profile.data.response;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.util.StringUtils;
 
@@ -26,6 +27,7 @@ public class ProfileInfoResponseDto {
 	private String email;
 	private String firstName;
 	private String lastName;
+	private String phoneNumber;
 	private String profileImageUrl;
 	@JsonIgnore
 	private String optimizedProfileImageUrl;
@@ -51,13 +53,6 @@ public class ProfileInfoResponseDto {
 		return profileImageUrl;
 	}
 
-	public LocalDate getBirthDate() {
-		if (showBirth) {
-			return this.birthDate;
-		}
-		return null;
-	}
-
 	@Data
 	@NoArgsConstructor
 	@AllArgsConstructor
@@ -66,5 +61,21 @@ public class ProfileInfoResponseDto {
 		private boolean marketingConsent;
 		private boolean messageAlarmConsent;
 		private boolean meetingAlarmConsent;
+	}
+
+	/**
+	 * 사용자의 생일 정보를 필터링합니다. - 본인이거나 생일 정보를 공개한 경우에만 반환합니다.
+	 * @param userId 사용자 id
+	 * @return
+	 */
+	public ProfileInfoResponseDto filterBirthDate(String userId) {
+		if (Objects.requireNonNull(this.email).equals(userId)) {
+			return this;
+		}
+		if (showBirth) {
+			return this;
+		}
+		this.birthDate = null;
+		return this;
 	}
 }
