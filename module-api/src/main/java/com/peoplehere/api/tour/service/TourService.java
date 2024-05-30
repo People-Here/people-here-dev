@@ -22,6 +22,7 @@ import com.peoplehere.shared.common.webhook.AlertWebhook;
 import com.peoplehere.shared.tour.data.request.TourCreateRequestDto;
 import com.peoplehere.shared.tour.data.request.TourListRequestDto;
 import com.peoplehere.shared.tour.data.request.TourMessageCreateRequestDto;
+import com.peoplehere.shared.tour.data.request.TourMessageStatusRequestDto;
 import com.peoplehere.shared.tour.data.request.TourUpdateRequestDto;
 import com.peoplehere.shared.tour.data.response.TourListResponseDto;
 import com.peoplehere.shared.tour.data.response.TourMessageListResponseDto;
@@ -337,6 +338,23 @@ public class TourService {
 				"request: [%s], error: [%s]".formatted(requestDto, exception.getMessage()));
 			throw new RuntimeException("쪽지 보내기 중 오류 발생: %s".formatted(requestDto), exception);
 		}
+	}
+
+	/**
+	 * 투어 쪽지 허용 여부 수정
+	 * @param requestDto 알람 설정 정보
+	 * @param userId 유저 id
+	 */
+	@Transactional
+	public void modifyTourMessageStatus(TourMessageStatusRequestDto requestDto, String userId) {
+		long accountId = accountRepository.findByUserId(userId)
+			.map(Account::getId)
+			.orElseThrow(() -> new EntityNotFoundException("해당 유저[%s]를 찾을 수 없습니다.".formatted(userId)));
+
+		Tour tour = tourRepository.findByIdAndAccountId(requestDto.id(), accountId)
+			.orElseThrow(() -> new EntityNotFoundException("해당 투어[%s]를 찾을 수 없습니다.".formatted(requestDto.id())));
+
+		tour.updateDirectMessageStatus(requestDto.consent());
 	}
 
 	/**

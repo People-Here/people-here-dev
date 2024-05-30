@@ -28,6 +28,7 @@ import com.peoplehere.shared.tour.data.request.TourCreateRequestDto;
 import com.peoplehere.shared.tour.data.request.TourIdRequestDto;
 import com.peoplehere.shared.tour.data.request.TourListRequestDto;
 import com.peoplehere.shared.tour.data.request.TourMessageCreateRequestDto;
+import com.peoplehere.shared.tour.data.request.TourMessageStatusRequestDto;
 import com.peoplehere.shared.tour.data.request.TourMessageTranslateRequestDto;
 import com.peoplehere.shared.tour.data.request.TourUpdateRequestDto;
 import com.peoplehere.shared.tour.data.response.TourListResponseDto;
@@ -328,4 +329,22 @@ public class TourController {
 			return ResponseEntity.internalServerError().build();
 		}
 	}
+
+	@CreateMessageAuthorize
+	@PostMapping("/messages/status")
+	public ResponseEntity<Void> modifyTourMessageStatus(@RequestBody TourMessageStatusRequestDto requestDto,
+		Principal principal) {
+		try {
+			tourService.modifyTourMessageStatus(requestDto, principal.getName());
+			return ResponseEntity.ok().build();
+		} catch (EntityNotFoundException entityNotFoundException) {
+			log.error("투어 쪽지 허용 상태 변경 request: {} userId: {} 중 오류 발생", requestDto, principal.getName(),
+				entityNotFoundException);
+			return ResponseEntity.notFound().build();
+		} catch (Exception e) {
+			log.error("투어 쪽지 허용 상태 변경 request: {} userId: {} 중 오류 발생", requestDto, principal.getName(), e);
+			return ResponseEntity.internalServerError().build();
+		}
+	}
+
 }

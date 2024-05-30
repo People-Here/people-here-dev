@@ -57,4 +57,8 @@ public class Tour extends BaseTimeEntity {
 		this.theme = requestDto.theme();
 		this.isDefaultImage = requestDto.isDefaultImage();
 	}
+
+	public void updateDirectMessageStatus(boolean directMessageStatus) {
+		this.directMessageStatus = directMessageStatus;
+	}
 }
