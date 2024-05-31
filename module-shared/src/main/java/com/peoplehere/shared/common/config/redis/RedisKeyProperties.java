@@ -1,5 +1,7 @@
 package com.peoplehere.shared.common.config.redis;
 
+import com.peoplehere.shared.common.enums.PageType;
+
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
@@ -90,11 +92,12 @@ public class RedisKeyProperties {
 	/**
 	 * 사용자의 최근 검색 장소를 저장하기 위한 key 생성
 	 * @param prefix
+	 * @param type
 	 * @param userId
 	 * @return
 	 */
-	public static String generateRecentSearchPlaceKey(String prefix, String userId) {
-		return String.format("%s:spring:recent:search:%s:place", prefix, userId);
+	public static String generateRecentSearchPlaceKey(String prefix, PageType type, String userId) {
+		return String.format("%s:spring:%s:recent:search:%s:place", prefix, type, userId);
 	}
 
 }

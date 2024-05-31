@@ -7,6 +7,7 @@ import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.peoplehere.api.common.annotation.CheckAbusing;
 import com.peoplehere.api.tour.service.LocationService;
+import com.peoplehere.shared.common.enums.PageType;
 import com.peoplehere.shared.common.enums.Region;
 import com.peoplehere.shared.tour.data.request.PlaceInfoRequestDto;
 import com.peoplehere.shared.tour.data.response.PlaceInfoHistoryResponseDto;
@@ -84,10 +86,11 @@ public class PlaceController {
 	 * @return 장소 정보 목록
 	 */
 	@CheckAbusing
-	@GetMapping("/search-history")
-	public ResponseEntity<PlaceInfoHistoryResponseDto> getSearchPlaceHistory(Principal principal) {
+	@GetMapping("/search-history/{type}")
+	public ResponseEntity<PlaceInfoHistoryResponseDto> getSearchPlaceHistory(@PathVariable PageType type,
+		Principal principal) {
 		try {
-			return ResponseEntity.ok(locationService.getSearchHistory(principal.getName()));
+			return ResponseEntity.ok(locationService.getSearchHistory(type, principal.getName()));
 		} catch (Exception e) {
 			log.error("장소 검색 기록 조회 중 오류 발생", e);
 			return ResponseEntity.internalServerError().build();

@@ -15,6 +15,7 @@ import com.peoplehere.shared.common.data.response.AlarmResponseDto;
 import com.peoplehere.shared.common.data.response.LanguageResponseDto;
 import com.peoplehere.shared.common.data.response.RegionResponseDto;
 import com.peoplehere.shared.common.enums.Gender;
+import com.peoplehere.shared.common.enums.PageType;
 
 @RestController
 @RequestMapping("/api/constants")
@@ -46,6 +47,15 @@ public class ConstantController {
 	@GetMapping("/alarms")
 	public ResponseEntity<List<AlarmResponseDto>> getAlarms() {
 		return ResponseEntity.ok(ALARM_INFO_LIST);
+	}
+
+	/**
+	 * 페이지 타입을 반환
+	 * @return
+	 */
+	@GetMapping("/pageTypes")
+	public ResponseEntity<PageType[]> getPageTypes() {
+		return ResponseEntity.ok(PageType.VALUES);
 	}
 }
 

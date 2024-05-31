@@ -11,6 +11,7 @@ import org.springframework.util.StringUtils;
 
 import com.peoplehere.api.common.service.RedisTaskService;
 import com.peoplehere.shared.common.enums.LangCode;
+import com.peoplehere.shared.common.enums.PageType;
 import com.peoplehere.shared.common.enums.Region;
 import com.peoplehere.shared.common.event.LocationInfoTranslatedEvent;
 import com.peoplehere.shared.common.service.LocationManager;
@@ -71,7 +72,7 @@ public class LocationService {
 
 			// 최근 검색어 내역에 저장
 			if (StringUtils.hasText(userId)) {
-				redisTaskService.addRecentSearchPlaceInfo(userId, responseDto);
+				redisTaskService.addRecentSearchPlaceInfo(requestDto.type(), userId, responseDto);
 			}
 
 			// 번역 이벤트 발행
@@ -86,12 +87,13 @@ public class LocationService {
 
 	/**
 	 * 사용자의 최근 장소 검색 기록 조회
+	 * @param type
 	 * @param userId
 	 * @return
 	 */
-	public PlaceInfoHistoryResponseDto getSearchHistory(String userId) {
+	public PlaceInfoHistoryResponseDto getSearchHistory(PageType type, String userId) {
 		try {
-			return redisTaskService.getRecentSearchPlaceInfo(Objects.requireNonNull(userId));
+			return redisTaskService.getRecentSearchPlaceInfo(type, Objects.requireNonNull(userId));
 		} catch (Exception exception) {
 			log.error("유저: {} 장소 검색 기록 조회 중 오류 발생", userId, exception);
 			throw exception;

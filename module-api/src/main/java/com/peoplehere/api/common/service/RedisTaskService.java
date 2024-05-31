@@ -18,6 +18,7 @@ import com.peoplehere.api.common.config.security.TokenProperties;
 import com.peoplehere.api.common.config.security.VerifyCodeProperties;
 import com.peoplehere.api.common.data.response.MailVerificationResponseDto;
 import com.peoplehere.api.common.data.response.PhoneVerificationResponseDto;
+import com.peoplehere.shared.common.enums.PageType;
 import com.peoplehere.shared.common.webhook.AlertWebhook;
 import com.peoplehere.shared.tour.data.response.PlaceInfoHistoryResponseDto;
 import com.peoplehere.shared.tour.data.response.PlaceInfoResponseDto;
@@ -38,6 +39,7 @@ public class RedisTaskService {
 	private final RedisTemplate<String, String> redisTemplate;
 	private final RedisTemplate<String, PlaceInfoResponseDto> placeInfoRedisTemplate;
 	private final AlertWebhook alertWebhook;
+	private static final int PLACE_SEARCH_TIME_LIMIT_DAYS = 30;
 
 	/**
 	 * 사용자의 refresh token을 저장
@@ -120,12 +122,13 @@ public class RedisTaskService {
 	/**
 	 * 유저의 최근 검색어 내역을 저장합니다.
 	 *
+	 * @param type 페이지 타입
 	 * @param userId 유저의 계정 ID
 	 * @param responseDto 검색한 장소 정보
 	 */
-	public void addRecentSearchPlaceInfo(String userId, PlaceInfoResponseDto responseDto) {
+	public void addRecentSearchPlaceInfo(PageType type, String userId, PlaceInfoResponseDto responseDto) {
 		try {
-			String key = generateRecentSearchPlaceKey(stage, userId);
+			String key = generateRecentSearchPlaceKey(stage, type, userId);
 			long score = System.currentTimeMillis(); // 현재 시간을 점수로 사용
 			ZSetOperations<String, PlaceInfoResponseDto> zSetOperations = placeInfoRedisTemplate.opsForZSet();
 
@@ -137,6 +140,9 @@ public class RedisTaskService {
 			if (size != null && size > 10) {
 				zSetOperations.removeRange(key, 0, size - 11);
 			}
+
+			// 키에 대한 만료 시간 설정
+			placeInfoRedisTemplate.expire(key, PLACE_SEARCH_TIME_LIMIT_DAYS, TimeUnit.DAYS);
 		} catch (Exception e) {
 			log.error("redis 최근 검색어 추가 실패 - userId: {}, responseDto: {}", userId, responseDto, e);
 			alertWebhook.alertError(
@@ -151,8 +157,8 @@ public class RedisTaskService {
 	 * @param userId
 	 * @return
 	 */
-	public PlaceInfoHistoryResponseDto getRecentSearchPlaceInfo(String userId) {
-		String key = generateRecentSearchPlaceKey(stage, userId);
+	public PlaceInfoHistoryResponseDto getRecentSearchPlaceInfo(PageType type, String userId) {
+		String key = generateRecentSearchPlaceKey(stage, type, userId);
 		ZSetOperations<String, PlaceInfoResponseDto> zSetOperations = placeInfoRedisTemplate.opsForZSet();
 		Set<PlaceInfoResponseDto> responseDtoSet = zSetOperations.reverseRange(key, 0, 9);
 
