@@ -49,4 +49,12 @@ public class TourMessage extends BaseTimeEntity {
 	@Column(nullable = false)
 	private String message;
 
+	@NotNull
+	@Column(name = "read_flag", nullable = false)
+	@Builder.Default
+	private boolean readFlag = false;
+
+	public void setReadFlag() {
+		this.readFlag = true;
+	}
 }

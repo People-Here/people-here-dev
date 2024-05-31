@@ -32,6 +32,7 @@ import com.peoplehere.shared.tour.entity.Tour;
 import com.peoplehere.shared.tour.entity.TourImage;
 import com.peoplehere.shared.tour.entity.TourInfo;
 import com.peoplehere.shared.tour.entity.TourLike;
+import com.peoplehere.shared.tour.entity.TourMessage;
 import com.peoplehere.shared.tour.entity.TourRoom;
 import com.peoplehere.shared.tour.repository.CustomTourRepository;
 import com.peoplehere.shared.tour.repository.CustomTourRoomRepository;
@@ -276,16 +277,22 @@ public class TourService {
 
 	/**
 	 * 유저의 투어 메시지 상세 조회
+	 * TODO: 끊어서 조회하도록 무한 스크롤 방식으로
 	 * @param userId
 	 * @return
 	 */
-	@Transactional(readOnly = true)
-	public TourMessageListResponseDto findTourMessageList(String userId, long tourRoomId, LangCode langCode) {
+	@Transactional
+	public TourMessageListResponseDto readTourMessageList(String userId, long tourRoomId, LangCode langCode) {
 		long accountId = accountRepository.findByUserId(userId)
 			.map(Account::getId)
 			.orElseThrow(() -> new EntityNotFoundException("해당 유저[%s]를 찾을 수 없습니다.".formatted(userId)));
 
-		return customTourRoomRepository.findTourMessageList(accountId, tourRoomId, langCode).orElse(null);
+		return customTourRoomRepository.findTourMessageList(accountId, tourRoomId, langCode)
+			.map(dto -> {
+				dto.getTourMessageList().forEach(TourMessage::setReadFlag);
+				return dto;
+			})
+			.orElse(null);
 	}
 
 	/**

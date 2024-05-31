@@ -270,12 +270,12 @@ public class TourController {
 	}
 
 	@CreateMessageAuthorize
-	@GetMapping("/messages/{tourRoomId}/{langCode}")
-	public ResponseEntity<TourMessageListResponseDto> getTourMessageList(Principal principal,
+	@PutMapping("/messages/{tourRoomId}/{langCode}")
+	public ResponseEntity<TourMessageListResponseDto> readTourMessageList(Principal principal,
 		@PathVariable long tourRoomId,
 		@PathVariable LangCode langCode) {
 		try {
-			return ResponseEntity.ok(tourService.findTourMessageList(principal.getName(), tourRoomId, langCode));
+			return ResponseEntity.ok(tourService.readTourMessageList(principal.getName(), tourRoomId, langCode));
 		} catch (Exception exception) {
 			log.error("[@{}], 언어정보: {} 투어 메시지 상세 조회 중 오류 발생", principal.getName(), langCode, exception);
 			return ResponseEntity.internalServerError().build();

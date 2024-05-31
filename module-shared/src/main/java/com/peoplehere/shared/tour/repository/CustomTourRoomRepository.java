@@ -52,6 +52,7 @@ public class CustomTourRoomRepository {
 					tourInfo.title.as("title"),
 					tourMessage.id.as("messageId"),
 					tourMessage.message.as("lastMessage"),
+					tourMessage.readFlag.as("readFlag"),
 					Projections.constructor(
 						ProfileInfoDto.class,
 						ownerAccount.id,
@@ -167,14 +168,7 @@ public class CustomTourRoomRepository {
 				guestAccount.directMessageStatus,
 				guestAccount.langCodeList
 			).as("guestInfo"),
-			GroupBy.list(Projections.bean(
-				TourMessageListResponseDto.MessageInfo.class,
-				tourMessage.id.as("messageId"),
-				tourMessage.senderId.as("senderId"),
-				tourMessage.receiverId.as("receiverId"),
-				tourMessage.message.as("message"),
-				tourMessage.createdAt.as("createdAt")
-			).skipNulls()).as("messageList")
+			GroupBy.list(tourMessage).as("tourMessageList")
 		);
 	}
 

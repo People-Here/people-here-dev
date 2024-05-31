@@ -31,6 +31,7 @@ public class TourRoomListResponseDto {
 		private long messageId;
 		private String title;
 		private String lastMessage;
+		private boolean readFlag;
 		private ProfileInfoDto ownerInfo;
 		private ProfileInfoDto guestInfo;
 	}
