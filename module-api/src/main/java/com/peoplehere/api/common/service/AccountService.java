@@ -202,6 +202,12 @@ public class AccountService {
 		redisTaskService.expireRefreshToken(requestDto.email());
 	}
 
+	@Transactional(readOnly = true)
+	public boolean checkPhoneNumberExist(String phoneNumber) {
+		return accountRepository.existsByPhoneNumber(phoneNumber);
+	}
+
+
 	/**
 	 * 사용자 인증을 시도하고, 인증된 Authentication 객체를 반환
 	 * @param requestDto 사용자 로그인 요청 정보

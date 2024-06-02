@@ -233,6 +233,9 @@ public class AccountController {
 		if (result.hasErrors()) {
 			throw new ClientBindException(result);
 		}
+		if (accountService.checkPhoneNumberExist(requestDto.phoneNumber())) {
+			throw new DuplicateException(requestDto.phoneNumber());
+		}
 		long start = System.currentTimeMillis();
 		PhoneVerificationResponseDto responseDto = verifyService.sendPhoneVerificationCode(requestDto.getSendNumber());
 		log.info("전화번호 인증번호 전송 성공 - {}ms, phoneNum: {}", System.currentTimeMillis() - start,
