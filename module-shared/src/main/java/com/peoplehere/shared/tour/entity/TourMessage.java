@@ -50,11 +50,20 @@ public class TourMessage extends BaseTimeEntity {
 	private String message;
 
 	@NotNull
-	@Column(name = "read_flag", nullable = false)
+	@Column(name = "sender_read_flag", nullable = false)
 	@Builder.Default
-	private boolean readFlag = false;
+	private boolean senderReadFlag = false;
 
-	public void setReadFlag() {
-		this.readFlag = true;
+	@NotNull
+	@Column(name = "receiver_read_flag", nullable = false)
+	@Builder.Default
+	private boolean receiverReadFlag = false;
+
+	public void setReadFlag(long accountId) {
+		if (accountId == this.senderId) {
+			this.senderReadFlag = true;
+		} else if (accountId == this.receiverId) {
+			this.receiverReadFlag = true;
+		}
 	}
 }

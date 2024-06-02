@@ -22,6 +22,7 @@ import com.querydsl.core.group.GroupBy;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.QBean;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
@@ -49,10 +50,14 @@ public class CustomTourRoomRepository {
 					TourRoomListResponseDto.TourRoomResponseDto.class,
 					tourRoom.id.as("id"),
 					tour.id.as("tourId"),
+					Expressions.asNumber(accountId).as("accountId"),
 					tourInfo.title.as("title"),
 					tourMessage.id.as("messageId"),
 					tourMessage.message.as("lastMessage"),
-					tourMessage.readFlag.as("readFlag"),
+					tourMessage.senderId.as("senderId"),
+					tourMessage.receiverId.as("receiverId"),
+					tourMessage.senderReadFlag.as("senderReadFlag"),
+					tourMessage.receiverReadFlag.as("receiverReadFlag"),
 					Projections.constructor(
 						ProfileInfoDto.class,
 						ownerAccount.id,

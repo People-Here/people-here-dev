@@ -28,11 +28,33 @@ public class TourRoomListResponseDto {
 		private long id;
 		private long tourId;
 		@JsonIgnore
+		private long accountId;
+		@JsonIgnore
 		private long messageId;
 		private String title;
 		private String lastMessage;
 		private boolean readFlag;
+		@JsonIgnore
+		private long senderId;
+		@JsonIgnore
+		private long receiverId;
+		@JsonIgnore
+		private boolean senderReadFlag;
+		@JsonIgnore
+		private boolean receiverReadFlag;
 		private ProfileInfoDto ownerInfo;
 		private ProfileInfoDto guestInfo;
+
+		/**
+		 * accountId와 senderId, receiverId 비교하여 readFlag를 설정한다.
+		 * @return
+		 */
+		public boolean isReadFlag() {
+			if (accountId == senderId) {
+				return senderReadFlag;
+			} else {
+				return receiverReadFlag;
+			}
+		}
 	}
 }

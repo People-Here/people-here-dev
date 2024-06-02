@@ -47,6 +47,23 @@ public class TourMessageListResponseDto {
 		@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
 		private LocalDateTime createdAt;
 		private boolean readFlag;
+		@JsonIgnore
+		private boolean senderReadFlag;
+		@JsonIgnore
+		private boolean receiverReadFlag;
+
+		/**
+		 * accountId와 senderId, receiverId 비교하여 readFlag를 설정한다.
+		 * @return
+		 */
+		public boolean isReadFlag(long accountId) {
+			if (accountId == senderId) {
+				return senderReadFlag;
+			} else {
+				return receiverReadFlag;
+			}
+
+		}
 	}
 
 	public List<MessageInfo> getMessageInfoList() {

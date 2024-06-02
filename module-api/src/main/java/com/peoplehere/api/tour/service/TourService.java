@@ -32,7 +32,6 @@ import com.peoplehere.shared.tour.entity.Tour;
 import com.peoplehere.shared.tour.entity.TourImage;
 import com.peoplehere.shared.tour.entity.TourInfo;
 import com.peoplehere.shared.tour.entity.TourLike;
-import com.peoplehere.shared.tour.entity.TourMessage;
 import com.peoplehere.shared.tour.entity.TourRoom;
 import com.peoplehere.shared.tour.repository.CustomTourRepository;
 import com.peoplehere.shared.tour.repository.CustomTourRoomRepository;
@@ -289,7 +288,7 @@ public class TourService {
 
 		return customTourRoomRepository.findTourMessageList(accountId, tourRoomId, langCode)
 			.map(dto -> {
-				dto.getTourMessageList().forEach(TourMessage::setReadFlag);
+				dto.getTourMessageList().forEach(tourMessage -> tourMessage.setReadFlag(accountId));
 				return dto;
 			})
 			.orElse(null);
