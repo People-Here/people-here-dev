@@ -28,6 +28,8 @@ public class TourResponseDto {
 	@Builder.Default
 	private boolean like = false;
 	private String theme;
+	@JsonProperty("directMessageStatus")
+	private boolean tourDirectMessageStatus;
 	private PlaceInfo placeInfo;
 	private ProfileInfoDto userInfo;
 

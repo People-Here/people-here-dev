@@ -120,6 +120,7 @@ public class CustomTourRepository {
 			tourInfo.description.as("description"),
 			likeExpression.as("like"),
 			tour.theme.as("theme"),
+			tour.directMessageStatus.as("tourDirectMessageStatus"),
 			Projections.bean(
 				TourResponseDto.PlaceInfo.class,
 				location.placeId.as("placeId"),
