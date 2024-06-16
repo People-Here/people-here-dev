@@ -17,6 +17,7 @@ import com.peoplehere.api.common.config.security.Token;
 import com.peoplehere.api.common.config.security.TokenProvider;
 import com.peoplehere.api.common.exception.AccountIdNotFoundException;
 import com.peoplehere.api.common.exception.DuplicateException;
+import com.peoplehere.shared.common.data.request.AccountDeactivateRequestDto;
 import com.peoplehere.shared.common.data.request.AccountEmailRequestDto;
 import com.peoplehere.shared.common.data.request.AccountNameRequestDto;
 import com.peoplehere.shared.common.data.request.AlarmConsentRequestDto;
@@ -25,7 +26,9 @@ import com.peoplehere.shared.common.data.request.SignInRequestDto;
 import com.peoplehere.shared.common.data.request.SignUpRequestDto;
 import com.peoplehere.shared.common.data.response.AccountResponseDto;
 import com.peoplehere.shared.common.entity.Account;
+import com.peoplehere.shared.common.entity.AccountDeactivationReason;
 import com.peoplehere.shared.common.entity.Consent;
+import com.peoplehere.shared.common.repository.AccountDeactivationReasonRepository;
 import com.peoplehere.shared.common.repository.AccountRepository;
 import com.peoplehere.shared.common.repository.ConsentRepository;
 import com.peoplehere.shared.common.repository.CustomAccountRepository;
@@ -45,6 +48,7 @@ public class AccountService {
 
 	private final AccountRepository accountRepository;
 	private final AccountInfoRepository accountInfoRepository;
+	private final AccountDeactivationReasonRepository accountDeactivationReasonRepository;
 	private final CustomAccountRepository customAccountRepository;
 	private final ConsentRepository consentRepository;
 	private final TourRepository tourRepository;
@@ -86,9 +90,9 @@ public class AccountService {
 			.orElseThrow(() -> new AccountIdNotFoundException(requestDto.getEmail()));
 
 		if (!account.isActive()) {
-			// Reactivate the account
+			// 계정 재활성화 및 비활성화 사유 삭제
 			account.setActive(true);
-			accountRepository.save(account);
+			accountDeactivationReasonRepository.deleteByAccountId(account.getId());
 		}
 
 		Authentication authentication = attemptAuthentication(requestDto);
@@ -143,14 +147,24 @@ public class AccountService {
 	/**
 	 * 사용자 계정을 비활성화한다
 	 * 비활성화된 계정은 스케줄러를 돌며 30일 후 삭제된다
-	 * @param accountId
+	 * @param requestDto 비활성화 요청 정보
 	 *
 	 */
 	@Transactional
-	public void deactivateAccount(long accountId) {
-		Account account = accountRepository.findById(accountId)
-			.orElseThrow(() -> new EntityNotFoundException("존재하지않는 계정: [%s]".formatted(accountId)));
+	public void deactivateAccount(AccountDeactivateRequestDto requestDto) {
+		Account account = accountRepository.findById(requestDto.id())
+			.orElseThrow(() -> new EntityNotFoundException("존재하지않는 계정: [%s]".formatted(requestDto.id())));
+
+		AccountDeactivationReason reason = AccountDeactivationReason.builder()
+			.accountId(account.getId())
+			.reason(requestDto.reason())
+			.build();
+
+		accountDeactivationReasonRepository.save(reason);
 		account.deactivate();
+
+		alertWebhook.alertInfo("유저: [%s] 비활성화".formatted(account.getEmail()),
+			"사유: [%s]".formatted(requestDto.reason()));
 	}
 
 	/**
@@ -206,7 +220,6 @@ public class AccountService {
 	public boolean checkPhoneNumberExist(String phoneNumber) {
 		return accountRepository.existsByPhoneNumber(phoneNumber);
 	}
-
 
 	/**
 	 * 사용자 인증을 시도하고, 인증된 Authentication 객체를 반환

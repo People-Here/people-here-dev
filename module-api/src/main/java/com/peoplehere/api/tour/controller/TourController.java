@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,6 +24,7 @@ import com.peoplehere.api.tour.service.TourService;
 import com.peoplehere.shared.common.enums.LangCode;
 import com.peoplehere.shared.common.enums.Region;
 import com.peoplehere.shared.tour.data.request.TourCreateRequestDto;
+import com.peoplehere.shared.tour.data.request.TourDeletionRequestDto;
 import com.peoplehere.shared.tour.data.request.TourIdRequestDto;
 import com.peoplehere.shared.tour.data.request.TourListRequestDto;
 import com.peoplehere.shared.tour.data.request.TourMessageCreateRequestDto;
@@ -154,8 +154,9 @@ public class TourController {
 	 * @return
 	 */
 	@UpdateTourAuthorize
-	@DeleteMapping("")
-	public ResponseEntity<Void> deleteTour(@RequestBody @Validated TourIdRequestDto requestDto,
+	@PostMapping("")
+	public ResponseEntity<Void> deleteTour(@RequestBody @Validated TourDeletionRequestDto requestDto,
+		Principal principal,
 		BindingResult bindingResult) throws BindException {
 
 		if (bindingResult.hasErrors()) {
@@ -163,7 +164,7 @@ public class TourController {
 		}
 
 		try {
-			tourService.deleteTour(requestDto.id());
+			tourService.deleteTour(requestDto, principal.getName());
 			return ResponseEntity.ok().build();
 		} catch (Exception e) {
 			return ResponseEntity.internalServerError().build();

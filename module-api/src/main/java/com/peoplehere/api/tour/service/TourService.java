@@ -20,6 +20,7 @@ import com.peoplehere.shared.common.repository.AccountRepository;
 import com.peoplehere.shared.common.service.FileService;
 import com.peoplehere.shared.common.webhook.AlertWebhook;
 import com.peoplehere.shared.tour.data.request.TourCreateRequestDto;
+import com.peoplehere.shared.tour.data.request.TourDeletionRequestDto;
 import com.peoplehere.shared.tour.data.request.TourListRequestDto;
 import com.peoplehere.shared.tour.data.request.TourMessageCreateRequestDto;
 import com.peoplehere.shared.tour.data.request.TourMessageStatusRequestDto;
@@ -29,12 +30,14 @@ import com.peoplehere.shared.tour.data.response.TourMessageListResponseDto;
 import com.peoplehere.shared.tour.data.response.TourResponseDto;
 import com.peoplehere.shared.tour.data.response.TourRoomListResponseDto;
 import com.peoplehere.shared.tour.entity.Tour;
+import com.peoplehere.shared.tour.entity.TourDeletionReason;
 import com.peoplehere.shared.tour.entity.TourImage;
 import com.peoplehere.shared.tour.entity.TourInfo;
 import com.peoplehere.shared.tour.entity.TourLike;
 import com.peoplehere.shared.tour.entity.TourRoom;
 import com.peoplehere.shared.tour.repository.CustomTourRepository;
 import com.peoplehere.shared.tour.repository.CustomTourRoomRepository;
+import com.peoplehere.shared.tour.repository.TourDeletionReasonRepository;
 import com.peoplehere.shared.tour.repository.TourImageRepository;
 import com.peoplehere.shared.tour.repository.TourInfoRepository;
 import com.peoplehere.shared.tour.repository.TourLikeRepository;
@@ -56,6 +59,7 @@ public class TourService {
 	private final TourInfoRepository tourInfoRepository;
 	private final TourLikeRepository tourLikeRepository;
 	private final TourMessageRepository tourMessageRepository;
+	private final TourDeletionReasonRepository tourDeletionReasonRepository;
 	private final TourRoomRepository tourRoomRepository;
 	private final CustomTourRepository customTourRepository;
 	private final CustomTourRoomRepository customTourRoomRepository;
@@ -182,17 +186,34 @@ public class TourService {
 	}
 
 	@Transactional
-	public void deleteTour(long tourId) {
+	public void deleteTour(TourDeletionRequestDto requestDto, String userId) {
 		try {
+			Account account = accountRepository.findByUserId(userId)
+				.orElseThrow(() -> new EntityNotFoundException("해당 유저[%s]를 찾을 수 없습니다.".formatted(userId)));
+			Tour tour = tourRepository.findByIdAndAccountId(requestDto.id(), account.getId())
+				.orElseThrow(() -> new EntityNotFoundException("해당 투어[%s]를 찾을 수 없습니다.".formatted(requestDto.id())));
+
+			long tourId = tour.getId();
+			TourDeletionReason reason = TourDeletionReason.builder()
+				.tourId(tourId)
+				.reason(requestDto.reason())
+				.build();
+			tourDeletionReasonRepository.save(reason);
+
+			// tour 정보 삭제
 			tourRepository.deleteById(tourId);
 			tourInfoRepository.deleteAllByTourId(tourId);
 			tourImageRepository.deleteAllByTourId(tourId);
 			tourLikeRepository.deleteAllByTourId(tourId);
+
+			// alert
+			alertWebhook.alertInfo("유저: [%s]가 투어: [%s] 삭제".formatted(userId, tourId),
+				"삭제 사유: [%s]".formatted(requestDto.reason()));
 		} catch (Exception exception) {
-			log.error("투어 ID: [{}] 삭제 중 오류 발생", tourId, exception);
+			log.error("투어 ID: [{}] 삭제 중 오류 발생", requestDto.id(), exception);
 			alertWebhook.alertError("투어 삭제 중 오류 발생",
-				"tourId: [%s], error: [%s]".formatted(tourId, exception.getMessage()));
-			throw new RuntimeException("투어 삭제 중 오류 발생: %s".formatted(tourId), exception);
+				"tourId: [%s], error: [%s]".formatted(requestDto.id(), exception.getMessage()));
+			throw new RuntimeException("투어 삭제 중 오류 발생: %s".formatted(requestDto.id()), exception);
 		}
 	}
 

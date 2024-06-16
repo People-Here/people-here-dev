@@ -9,9 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,6 +32,7 @@ import com.peoplehere.api.common.exception.ClientBindException;
 import com.peoplehere.api.common.exception.DuplicateException;
 import com.peoplehere.api.common.service.AccountService;
 import com.peoplehere.api.common.service.VerifyService;
+import com.peoplehere.shared.common.data.request.AccountDeactivateRequestDto;
 import com.peoplehere.shared.common.data.request.AccountEmailRequestDto;
 import com.peoplehere.shared.common.data.request.AccountNameRequestDto;
 import com.peoplehere.shared.common.data.request.AlarmConsentRequestDto;
@@ -254,13 +253,19 @@ public class AccountController {
 		return ResponseEntity.ok().body(verifyService.checkPhoneVerifyCode(requestDto));
 	}
 
-	@DeleteMapping("/{accountId}")
-	public ResponseEntity<String> deleteAccount(@PathVariable long accountId) {
+	@UpdateProfileAuthorize
+	@PostMapping("/deactivate")
+	public ResponseEntity<String> deactivateAccount(@Validated @RequestBody AccountDeactivateRequestDto requestDto,
+		BindingResult result) throws BindException {
+		if (result.hasErrors()) {
+			throw new BindException(result);
+		}
+
 		try {
-			accountService.deactivateAccount(accountId);
+			accountService.deactivateAccount(requestDto);
 			return ResponseEntity.ok().body("success");
 		} catch (Exception e) {
-			log.error("계정: {} 비활성화 중 오류 발생", accountId, e);
+			log.error("계정: {} 비활성화 중 오류 발생", requestDto, e);
 			return ResponseEntity.internalServerError().build();
 		}
 	}
