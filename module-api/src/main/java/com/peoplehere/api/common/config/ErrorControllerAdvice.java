@@ -93,6 +93,7 @@ public class ErrorControllerAdvice {
 	@ExceptionHandler(value = BindException.class)
 	public ResponseEntity<ErrorResponseDto> handleBindException(BindException exception) {
 		log.error("바인딩 중 오류 발생", exception);
+		alertWebhook.alertError("바인딩 중 오류 발생", exception.getMessage());
 		ErrorResponseDto response = new ErrorResponseDto("바인딩 중 오류 발생", exception);
 		return ResponseEntity.badRequest().body(response);
 	}

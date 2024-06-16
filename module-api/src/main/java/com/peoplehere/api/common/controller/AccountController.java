@@ -85,10 +85,10 @@ public class AccountController {
 	@PostMapping("/sign-in")
 	public ResponseEntity<AccountResponseDto> signIn(@Validated @RequestBody SignInRequestDto requestDto,
 		BindingResult result) throws
-		ClientBindException {
+		BindException {
 
 		if (result.hasErrors()) {
-			throw new ClientBindException(result);
+			throw new BindException(result);
 		}
 		AccountResponseDto responseDto = accountService.signIn(requestDto);
 		log.debug("client: {} 로그인 성공", requestDto.getEmail());
@@ -171,9 +171,9 @@ public class AccountController {
 	 */
 	@PostMapping("/token")
 	public ResponseEntity<String> reissueToken(@Validated @RequestBody TokenRequestDto requestDto,
-		BindingResult result) throws ClientBindException {
+		BindingResult result) throws BindException {
 		if (result.hasErrors()) {
-			throw new ClientBindException(result);
+			throw new BindException(result);
 		}
 		try {
 			return ResponseEntity.ok(
