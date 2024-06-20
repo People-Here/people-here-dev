@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.peoplehere.shared.common.data.request.TranslationTextRequestDto;
@@ -127,8 +128,11 @@ public class DeeplTranslateService implements TranslateService {
 				})
 				.block();
 
-			return getTranslateText(translationResponse);
-
+			String result = getTranslateText(translationResponse);
+			if (!StringUtils.hasText(result)) {
+				alertWebhook.alertError("번역 결과가 공란으로 나와버렸어요. 고쳐줘요", "요청 정보: [%s], 결과: [%s]".formatted(request, result));
+			}
+			return result;
 		} catch (Exception exception) {
 			log.error("번역 실패 - 요청 정보: {}", request.getSrcList(), exception);
 			alertWebhook.alertError("Deepl 번역 서비스 실패",
