@@ -200,7 +200,7 @@ public class AccountController {
 			throw new ClientBindException(result);
 		}
 		long start = System.currentTimeMillis();
-		MailVerificationResponseDto responseDto = verifyService.sendEmailVerificationCode(requestDto.email());
+		MailVerificationResponseDto responseDto = verifyService.sendEmailVerificationCode(requestDto);
 		log.info("이메일 인증번호 전송 성공 - {}ms, email: {}", System.currentTimeMillis() - start, requestDto.email());
 		return ResponseEntity.ok().body(responseDto);
 	}
@@ -236,7 +236,7 @@ public class AccountController {
 			throw new DuplicateException(requestDto.phoneNumber());
 		}
 		long start = System.currentTimeMillis();
-		PhoneVerificationResponseDto responseDto = verifyService.sendPhoneVerificationCode(requestDto.getSendNumber());
+		PhoneVerificationResponseDto responseDto = verifyService.sendPhoneVerificationCode(requestDto);
 		log.info("전화번호 인증번호 전송 성공 - {}ms, phoneNum: {}", System.currentTimeMillis() - start,
 			requestDto.getSendNumber());
 		return ResponseEntity.ok().body(responseDto);
