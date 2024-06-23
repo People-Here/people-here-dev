@@ -40,6 +40,8 @@ public class LocationManager {
 			.placeId(location.getPlaceId())
 			.name(locationInfo.getName())
 			.address(locationInfo.getAddress())
+			.latitude(location.getLatitude())
+			.longitude(location.getLongitude())
 			.build();
 	}
 

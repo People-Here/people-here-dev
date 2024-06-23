@@ -21,7 +21,7 @@ import com.peoplehere.shared.tour.data.response.PlaceDetailResponseDto;
 import com.peoplehere.shared.tour.data.response.PlaceInfoHistoryResponseDto;
 import com.peoplehere.shared.tour.data.response.PlaceInfoListResponseDto;
 import com.peoplehere.shared.tour.data.response.PlaceInfoResponseDto;
-import com.peoplehere.shared.tour.repository.LocationInfoRepository;
+import com.peoplehere.shared.tour.repository.CustomLocationRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 public class LocationService {
 
 	private final MapComponent mapService;
-	private final LocationInfoRepository locationInfoRepository;
+	private final CustomLocationRepository customLocationRepository;
 	private final RedisTaskService redisTaskService;
 	private final LocationManager locationManager;
 	private final ApplicationEventPublisher eventPublisher;
@@ -57,13 +57,8 @@ public class LocationService {
 	public PlaceInfoResponseDto addPlaceInfo(String userId, PlaceInfoRequestDto requestDto) {
 		LangCode mapLangCode = requestDto.region().getMapLangCode();
 		try {
-			PlaceInfoResponseDto responseDto = locationInfoRepository.findByPlaceIdAndLangCode(requestDto.placeId(),
+			PlaceInfoResponseDto responseDto = customLocationRepository.findPlaceInfoResponseDto(requestDto.placeId(),
 					mapLangCode)
-				.map(locationInfo -> PlaceInfoResponseDto.builder()
-					.placeId(locationInfo.getPlaceId())
-					.name(locationInfo.getName())
-					.address(locationInfo.getAddress())
-					.build())
 				.orElseGet(() -> {
 					PlaceDetailResponseDto detailResponseDto = mapService.fetchPlaceDetailInfo(
 						toDetailRequestDto(requestDto));
